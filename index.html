@@ -8,13 +8,13 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Subash Mk — One Mind. Nine Domains">
 <meta property="og:description" content="Founder of Nientra · AI & Data Science student · Builder of Rex, MockMentor, TrackMe & Nuketown. Work less. Win more.">
-<meta property="og:image" content="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif">
+<meta property="og:image" content="https://subasmk.github.io/cinematic-portfolio/assets/rex-idle.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Subash Mk — One Mind. Nine Domains">
 <meta name="twitter:description" content="Founder of Nientra · AI builder from Coimbatore · One mind, nine domains.">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif">
+<meta name="twitter:image" content="https://subasmk.github.io/cinematic-portfolio/assets/rex-idle.png">
 <meta name="theme-color" content="#f2eee5">
-<link rel="icon" href="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif">
+<link rel="icon" href="assets/rex-idle.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -287,6 +287,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 #rexBubble{position:absolute;left:50%;bottom:calc(100% + 10px);width:196px;pointer-events:auto;background:#f2eee5;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);opacity:1;padding:9px 12px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;line-height:1.45;cursor:pointer}
 #rexBubble::after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-13px;transform:translateX(-50%);border:6px solid transparent;border-top:10px solid var(--ink)}
 #rexBubble.dozing{width:auto}
+#rexBubble{transition:opacity .45s ease}
 @media(max-width:640px){
   #webrexStage{--petw:124px;--peth:96px;--petb:10px}
   #rexBubble{width:172px}
@@ -315,6 +316,20 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   #rexChatBtn{bottom:120px}
   #rexChat{bottom:174px;right:8px;width:min(94vw,350px)}
 }
+
+/* round 7 — clean Rex art, project diagrams, drag personality */
+/* hero is full-bleed so the 3D sun is never sliced by the 1120px column; content keeps the column width */
+section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/2 + 18px));padding-right:max(18px,calc((100% - 1120px)/2 + 18px))}
+.rex-frame img,.domain-rex .frame img{object-fit:contain;image-rendering:auto;background:transparent}
+.rex-frame img{width:100%;height:auto;aspect-ratio:1}
+.project .p-gif{width:150px;border:none;background:none;padding:0;margin-top:10px}
+.p-flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:16px 0 4px}
+.p-flow span{font-family:'Space Mono',monospace;font-weight:700;font-size:.68rem;text-transform:uppercase;background:var(--cream-card);border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:7px 9px}
+.p-flow i{font-style:normal;font-weight:700;color:var(--red)}
+#webrex.swing{transform-origin:50% 100%;transition:transform .08s linear}
+#webrex.squash{animation:rexSquash .42s ease-out}
+@keyframes rexSquash{0%{transform:scale(1.12,.78)}40%{transform:scale(.94,1.08)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){#webrex.squash{animation:none}}
 </style>
 </head>
 <body>
@@ -362,7 +377,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     </div>
     <div class="hero-rex">
       <figure class="rex-frame">
-        <img src="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif" alt="Rex the Shiba, Subash's desktop assistant" width="300" height="300" loading="eager">
+        <img src="assets/rex-idle.png" alt="Rex the Shiba, Subash's desktop assistant" width="300" height="300" loading="eager">
         <figcaption>REX — MY ASSISTANT</figcaption>
       </figure>
       <div class="speech">"That's my human. He built me first, then got ambitious. Keep scrolling — the good stuff compounds." 🐕</div>
@@ -418,7 +433,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       <p class="lede reveal d2">Not "expert in everything." A map of what I've shipped, what I'm building, and what I'm still exploring. Tap a card — Rex reacts.</p>
     </div>
     <div class="domain-rex reveal d2">
-      <div class="frame"><img id="domainRex" src="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/gesture_point.gif" alt="Rex pointing at the domains map" width="200" height="200" loading="lazy"></div>
+      <div class="frame"><img id="domainRex" src="assets/rex-point.png" alt="Rex pointing at the domains map" width="200" height="200" loading="lazy"></div>
       <p class="say" id="domainSay">← Pick a domain. I dare you.</p>
     </div>
   </div>
@@ -485,22 +500,22 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     <article class="project reveal tilt">
       <div class="p-top"><h3>Rex</h3><span class="tag red">Desktop AI</span></div>
       <p>A desktop-pet AI assistant that lives on your screen — part of Shiba Desktop. He talks, helps, judges your tab count, and keeps you company while you work. Yes, he's the dog all over this site.</p>
-      <img class="p-gif" src="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/emote_pack.gif" alt="Rex the Shiba showing his expressions" width="200" height="200" loading="lazy">
+      <img class="p-gif" src="assets/rex-wave.png" alt="Rex the Shiba showing his expressions" width="200" height="200" loading="lazy">
     </article>
     <article class="project reveal d1 tilt">
       <div class="p-top"><h3>MockMentor</h3><span class="tag">AI Tool</span></div>
       <p>An AI mock-interview coach. Feed it your resume and it interviews you like the real thing — then tells you, kindly but honestly, where you fumbled.</p>
-      <span class="p-link">For nervous humans everywhere</span>
+      <div class="p-flow" aria-hidden="true"><span>Your resume</span><i>→</i><span>Mock interview</span><i>→</i><span>Honest feedback</span></div><span class="p-link">For nervous humans everywhere</span>
     </article>
     <article class="project reveal tilt">
       <div class="p-top"><h3>TrackMe</h3><span class="tag">Tracker App</span></div>
       <p>A habit &amp; learning tracker built on a simple belief: small streaks, daily wins, no guilt-trip notifications. The app I'm actively shaping in the App Development domain.</p>
-      <span class="p-link">Currently in the workshop</span>
+      <div class="p-flow" aria-hidden="true"><span>Habit</span><i>→</i><span>Daily streak</span><i>→</i><span>Learning log</span></div><span class="p-link">Currently in the workshop</span>
     </article>
     <article class="project reveal d1 tilt">
       <div class="p-top"><h3>Nuketown</h3><span class="tag red">Playable</span></div>
       <p>A gesture-controlled arena game — your hand is the controller, your webcam is the arena gate. No installs. It runs live in your browser, right now.</p>
-      <a class="p-link" href="https://nuketown-gesture.onrender.com" target="_blank" rel="noopener">▶ Play Nuketown live</a>
+      <div class="p-flow" aria-hidden="true"><span>Your hand</span><i>→</i><span>Webcam</span><i>→</i><span>Arena</span></div><a class="p-link" href="https://nuketown-gesture.onrender.com" target="_blank" rel="noopener">▶ Play Nuketown live</a>
     </article>
   </div>
 </section>
@@ -554,7 +569,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 
 <!-- back-to-top Rex -->
 <button id="topBtn" type="button" aria-label="Back to top">
-  <img src="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif" alt="Rex — back to top" width="100" height="100" loading="lazy">
+  <img src="assets/rex-idle.png" alt="Rex — back to top" width="100" height="100" loading="lazy">
 </button>
 
 <!-- WebRex — the living site assistant (the old guide, upgraded to a character) -->
@@ -716,10 +731,10 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 
   /* domains — light up + Rex reacts */
   var GIFS = {
-    idle:  "https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif",
-    point: "https://raw.githubusercontent.com/subasmk/shiba-desktop/main/gesture_point.gif",
-    hacking: "https://raw.githubusercontent.com/subasmk/shiba-desktop/main/hacking.gif",
-    celebrate: "https://raw.githubusercontent.com/subasmk/shiba-desktop/main/celebrate_jump.gif"
+    idle:  "assets/rex-idle.png",
+    point: "assets/rex-point.png",
+    hacking: "assets/rex-work.png",
+    celebrate: "assets/rex-celebrate.png"
   };
   Object.keys(GIFS).forEach(function(k){ var im = new Image(); im.src = GIFS[k]; });
   var dRex = document.getElementById("domainRex"), dSay = document.getElementById("domainSay");
@@ -901,7 +916,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
         sunGroup.position.set(2.35, 3.15, 0); sunGroup.scale.setScalar(0.55);
         restoreShapes();
       } else {
-        sunGroup.position.set(5.4, 2.5, 0); sunGroup.scale.setScalar(0.85);
+        sunGroup.position.set(Math.min(5.4, visW * 0.27), 2.5, 0); sunGroup.scale.setScalar(0.85);
         restoreShapes();
       }
       /* keep the tappable-sun hit area exactly over the rendered disc
@@ -1052,6 +1067,13 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   var typeTimer = null;
   window.__rexSay = function(text){
     if(!bubble || !text) return;
+    /* round 7: lines fade away on their own so the bubble never sits on page text */
+    clearTimeout(window.__rexFade);
+    bubble.style.opacity = "1"; bubble.style.pointerEvents = "auto";
+    window.__rexFade = setTimeout(function(){
+      if(bubble.classList.contains("dozing")) return;
+      bubble.style.opacity = "0"; bubble.style.pointerEvents = "none";
+    }, 4500 + text.length * 45);
     /* round 5: WebRex lip-syncs (talking.gif) while the bubble types */
     if(window.WebRex && window.WebRex._talkStart) window.WebRex._talkStart();
     if(typeTimer){ clearInterval(typeTimer); typeTimer = null; }
@@ -1423,10 +1445,20 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     tap_random:480, tap_multi:480 };
   var LOOPS = { idle:1, walk:1, sleeping:1, talking:1, listening:1, thinking:1, working:1 };
   var QUIPS = {
-    tap_belly: "Hey! That tickles 😄",
-    tap_sunglasses: "Cool stays on. 😎",
-    tap_nose: "Boop. Accepted."
+    tap_belly: "Hey! That tickles 😄 Belly access costs one commit.",
+    tap_sunglasses: "Cool stays on. Deploy stays green. 😎",
+    tap_nose: "Boop! Nose tax paid.",
+    tap_head: "Head pats are free. Compliments are better.",
+    tap_tail: "Tail is not a feature. Hands off. 🐕",
+    tap_ear: "Ears are for listening to bug reports only.",
+    tap_paw: "High five accepted. Ship it. 🐾",
+    tap_back: "Left a little. No, my left. Yes, there.",
+    tap_leg: "Careful, those legs run production.",
+    tap_body: "I am load-bearing. Poke gently."
   };
+  var DRAG_LINES = ["Oi! Careful, I am load-bearing!", "Put me down gently, I was watching the build.", "Whoa whoa whoa. Where are we going?!"];
+  var LAND_LINES = ["10/10 landing. Zero dignity.", "Landed it. Mostly on my face.", "Ouch. Fine. I forgive you. Barely."];
+  var dragSayIdx = 0, landSayIdx = 0;
 
   /* ---------- geometry / rendering ---------- */
   var x = 0, y = 0;              /* x: px from viewport left; y: px above the floor */
@@ -1587,7 +1619,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     clearTimeout(wanderTimer);
     stopWalk();
     showGif("sleeping");
-    if(bubble){ bubble.textContent = "Zzz…"; bubble.classList.add("dozing"); }
+    if(bubble){ bubble.textContent = "Zzz… deploy later."; bubble.classList.add("dozing"); bubble.style.opacity = "1"; bubble.style.pointerEvents = "auto"; }
     render();
   }
   function wake(){
@@ -1686,6 +1718,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     box.style.transition = "none";                 /* the pointer drives him 1:1 now */
     cur = "drag";
     showGif("jump", true);
+    say(DRAG_LINES[dragSayIdx++ % DRAG_LINES.length]);
   }
   box.addEventListener("pointerdown", function(ev){
     if(cur === "sleep") return;                    /* the window listener wakes him instead */
@@ -1712,19 +1745,29 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       if(!reduced) startDrag();
     }
     if(dragInfo.moved && !reduced){
-      x = clampX(dragInfo.bx + dx);
+      var nx = clampX(dragInfo.bx + dx);
+      var vx = nx - x;                              /* px since the last move: drives the swing */
+      x = nx;
       y = Math.min(Math.max(dragInfo.by - dy, 0), window.innerHeight * 0.60);
       render();
+      img.classList.add("swing");
+      img.style.transform = (flipped ? "scaleX(-1) " : "") + "rotate(" + Math.max(-22, Math.min(22, vx * 1.6)) + "deg)";
     }
   });
   function endDrag(ev){
     if(!dragInfo || (ev && ev.pointerId !== undefined && ev.pointerId !== dragInfo.id)) return;
-    var wasDrag = dragInfo.moved;
+    var wasDrag = dragInfo.moved, tapInfo = dragInfo;
     clearTimeout(dragInfo.tapTimer);
     dragInfo = null;
+    /* a quick tap (released inside the 130ms window) used to be swallowed:
+       the pending tap timer was cleared here and never fired. Fire it now. */
+    if(!wasDrag && ev && ev.type === "pointerup"){ onRexTap(tapInfo.fx, tapInfo.fy); return; }
     if(!wasDrag || reduced) return;
     cur = "drop";
+    img.classList.remove("swing");
+    img.style.transform = flipped ? "scaleX(-1)" : "";
     showGif("fall", true);
+    setTimeout(function(){ if(cur === "drop"){ img.classList.remove("squash"); void img.offsetWidth; img.classList.add("squash"); say(LAND_LINES[landSayIdx++ % LAND_LINES.length]); } }, 300);
     /* round 6: the fall is a CSS transition too — no rAF stepping */
     transitioning = true;
     box.style.transition = "transform 260ms cubic-bezier(.55,.06,.85,1)";
@@ -1845,6 +1888,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   x = maxX();                                      /* start bottom-right, like the old guide */
   render();
   scheduleWander();
+  setTimeout(function(){ if(cur === "idle" || cur === "walk") say("Back again? Good. Shipping beats scrolling."); }, 1400);
   setTimeout(guard(tryFirstWalk), 3000);           /* round 6: guaranteed first wander */
   setTimeout(guard(tryFirstWalk), 5200);           /* second chance if he was mid-line */
   window.addEventListener("resize", function(){ x = clampX(x); render(); });
