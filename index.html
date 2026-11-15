@@ -221,6 +221,13 @@ footer a{text-decoration:none;border-bottom:2.5px solid var(--red)}
   .letterbox{display:none}
 }
 </style>
+<style>
+/* WebGL hero layer + anime hooks */
+#gl{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:block}
+.sun-wrap{transition:opacity .8s ease}
+.hero.gl-on .sun-wrap{opacity:.14}
+html.js-anime h1.mega .row span{animation:none}
+</style>
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
@@ -238,6 +245,7 @@ footer a{text-decoration:none;border-bottom:2.5px solid var(--red)}
 <main id="top">
 <!-- ================= HERO ================= -->
 <section class="hero" data-guide="Woof! I'm Rex, his assistant. Scroll — I'll show you around.">
+  <canvas id="gl" aria-hidden="true"></canvas>
   <div class="sun-wrap" data-para="0.12" aria-hidden="true">
     <div class="sun-ring"></div><div class="sun-ring2"></div><div class="sun"></div>
   </div>
@@ -462,6 +470,8 @@ footer a{text-decoration:none;border-bottom:2.5px solid var(--red)}
   </button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -475,14 +485,53 @@ footer a{text-decoration:none;border-bottom:2.5px solid var(--red)}
   var roleEl = document.getElementById("roleWord"), ri = 0;
   if(!reduced){
     setInterval(function(){
-      roleEl.classList.add("swap");
-      setTimeout(function(){ ri = (ri+1) % roles.length; roleEl.textContent = roles[ri]; roleEl.classList.remove("swap"); }, 300);
+      if(window.anime){
+        roleEl.style.transition = "none";
+        anime({
+          targets: roleEl, opacity: [1, 0], translateY: [0, -9], duration: 240, easing: "easeInQuad",
+          complete: function(){
+            ri = (ri+1) % roles.length; roleEl.textContent = roles[ri];
+            anime({
+              targets: roleEl, opacity: [0, 1], translateY: [10, 0], duration: 320, easing: "easeOutCubic",
+              complete: function(){ roleEl.style.transition = ""; roleEl.style.transform = ""; roleEl.style.opacity = ""; }
+            });
+          }
+        });
+      } else {
+        roleEl.classList.add("swap");
+        setTimeout(function(){ ri = (ri+1) % roles.length; roleEl.textContent = roles[ri]; roleEl.classList.remove("swap"); }, 300);
+      }
     }, 2400);
   }
 
   /* scroll reveals */
   var revealIO = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); revealIO.unobserve(e.target); } });
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target;
+      revealIO.unobserve(el);
+      if(window.anime && !reduced){
+        var delay = 0;
+        if(el.classList.contains("d1")) delay += 80;
+        if(el.classList.contains("d2")) delay += 160;
+        if(el.classList.contains("d3")) delay += 240;
+        if(el.parentNode && (el.parentNode.classList.contains("domain-grid") || el.parentNode.classList.contains("project-grid"))){
+          delay += (Array.prototype.indexOf.call(el.parentNode.children, el) % 3) * 90;
+        }
+        el.style.transition = "none";
+        anime({
+          targets: el, opacity: [0, 1], translateY: [34, 0], rotate: [-0.6, 0],
+          duration: 720, delay: delay, easing: "easeOutCubic",
+          complete: function(){
+            el.classList.add("in");
+            el.style.opacity = ""; el.style.transform = "";
+            setTimeout(function(){ el.style.transition = ""; }, 40);
+          }
+        });
+      } else {
+        el.classList.add("in");
+      }
+    });
   }, {threshold: .12});
   document.querySelectorAll(".reveal").forEach(function(el){ revealIO.observe(el); });
 
@@ -490,6 +539,15 @@ footer a{text-decoration:none;border-bottom:2.5px solid var(--red)}
   function countUp(el){
     var target = parseInt(el.getAttribute("data-count"), 10), t0 = null;
     if(reduced){ el.textContent = target; return; }
+    if(window.anime){
+      var obj = { v: 0 };
+      anime({
+        targets: obj, v: target, duration: 1000, easing: "easeOutCubic",
+        update: function(){ el.textContent = Math.round(obj.v); },
+        complete: function(){ el.textContent = target; }
+      });
+      return;
+    }
     function step(ts){
       if(!t0) t0 = ts;
       var p = Math.min((ts - t0) / 900, 1);
@@ -574,6 +632,210 @@ footer a{text-decoration:none;border-bottom:2.5px solid var(--red)}
   document.getElementById("rexBtn").addEventListener("click", function(){
     document.getElementById("contact").scrollIntoView({behavior: reduced ? "auto" : "smooth"});
   });
+})();
+</script>
+<script>
+(function(){
+  "use strict";
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var hero = document.querySelector(".hero");
+
+  /* ================= Three.js hero scene (poster style) ================= */
+  var glOn = false;
+  (function initGL(){
+    var canvas = document.getElementById("gl");
+    if(!hero || !canvas || !window.THREE) return;
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    } catch(e){ return; }
+    if(!renderer || !renderer.getContext()) return;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.setClearColor(0x000000, 0);
+
+    var INK = 0x201f1c, RED = 0xd94f2b;
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 0, 15);
+
+    var group = new THREE.Group();
+    scene.add(group);
+
+    /* vermilion sun disc + ink rim, centre-right */
+    var sunGroup = new THREE.Group();
+    var sun = new THREE.Mesh(
+      new THREE.CircleGeometry(2.55, 56),
+      new THREE.MeshBasicMaterial({ color: RED })
+    );
+    var rim = new THREE.Mesh(
+      new THREE.RingGeometry(2.55, 2.76, 56),
+      new THREE.MeshBasicMaterial({ color: INK, side: THREE.DoubleSide })
+    );
+    sunGroup.add(sun); sunGroup.add(rim);
+    sunGroup.position.set(3.4, 0.7, 0);
+    group.add(sunGroup);
+
+    /* tilted rings around the sun (children of sunGroup so they follow it) */
+    function makeRing(radius, tube, color, wire, opacity){
+      var m = new THREE.Mesh(
+        new THREE.TorusGeometry(radius, tube, wire ? 6 : 10, wire ? 60 : 100),
+        new THREE.MeshBasicMaterial({ color: color, wireframe: !!wire, transparent: opacity < 1, opacity: opacity })
+      );
+      sunGroup.add(m);
+      return m;
+    }
+    var ring1 = makeRing(3.35, 0.045, INK, false, 1);  ring1.rotation.set(1.15, 0.3, 0);
+    var ring2 = makeRing(3.95, 0.04, RED, false, 1);   ring2.rotation.set(1.35, -0.4, 0);
+    var ring3 = makeRing(4.45, 0.3, INK, true, 0.45);  ring3.rotation.set(0.9, 0.7, 0);
+
+    /* small floating geometric shapes, flat colours, no lights */
+    var geos = [
+      function(s){ return new THREE.BoxGeometry(s, s, s); },
+      function(s){ return new THREE.OctahedronGeometry(s * 0.75); },
+      function(s){ return new THREE.TorusKnotGeometry(s * 0.42, s * 0.16, 64, 8); },
+      function(s){ return new THREE.ConeGeometry(s * 0.6, s * 1.1, 5); },
+      function(s){ return new THREE.TorusGeometry(s * 0.55, s * 0.18, 8, 20); }
+    ];
+    var shapes = [];
+    for(var i = 0; i < 11; i++){
+      var size = 0.3 + Math.random() * 0.5;
+      var mesh = new THREE.Mesh(
+        geos[i % geos.length](size),
+        new THREE.MeshBasicMaterial({ color: i % 2 ? RED : INK, wireframe: i % 3 === 2 })
+      );
+      mesh.position.set(-8.5 + Math.random() * 17, -4.2 + Math.random() * 8.4, -2 + Math.random() * 3);
+      mesh.rotation.set(Math.random() * 3, Math.random() * 3, 0);
+      mesh.userData = {
+        y0: mesh.position.y,
+        sp: 0.4 + Math.random() * 0.7,
+        ph: Math.random() * 6.28,
+        rx: (Math.random() - 0.5) * 0.012,
+        ry: (Math.random() - 0.5) * 0.012
+      };
+      shapes.push(mesh);
+      group.add(mesh);
+    }
+
+    /* responsive fit — sun hugs the right edge on narrow screens, like the CSS sun */
+    var baseScale = 1, scrollScale = 1;
+    function applyScale(){ group.scale.setScalar(baseScale * scrollScale); }
+    function resize(){
+      var w = hero.clientWidth || 1, h = hero.clientHeight || 1;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      if(camera.aspect < 0.9){ sunGroup.position.x = 1.3; baseScale = 0.82; }
+      else { sunGroup.position.x = 3.4; baseScale = 1; }
+      applyScale();
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    hero.classList.add("gl-on");
+    glOn = true;
+
+    if(reducedMotion){ renderer.render(scene, camera); return; } /* one static frame, no loop */
+
+    /* pointer parallax targets */
+    var tx = 0, ty = 0, px = 0, py = 0;
+    if(window.matchMedia("(pointer: fine)").matches){
+      hero.addEventListener("mousemove", function(ev){
+        var r = hero.getBoundingClientRect();
+        tx = (ev.clientX - r.left) / r.width - 0.5;
+        ty = (ev.clientY - r.top) / r.height - 0.5;
+      });
+    }
+
+    /* fade + slight shrink tied to hero scroll progress */
+    function onScroll(){
+      var p = Math.min(Math.max(window.scrollY / (hero.clientHeight || 1), 0), 1);
+      canvas.style.opacity = String(1 - p * 0.85);
+      scrollScale = 1 - p * 0.1;
+      applyScale();
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    /* pause when hero is off-screen or the tab is hidden */
+    var heroVisible = true, tabVisible = !document.hidden;
+    if("IntersectionObserver" in window){
+      new IntersectionObserver(function(en){ heroVisible = en[0].isIntersecting; }, { threshold: 0 }).observe(hero);
+    }
+    document.addEventListener("visibilitychange", function(){ tabVisible = !document.hidden; });
+
+    var clock = new THREE.Clock();
+    (function tick(){
+      requestAnimationFrame(tick);
+      if(!heroVisible || !tabVisible) return;
+      var t = clock.getElapsedTime();
+      ring1.rotation.z = t * 0.12;
+      ring2.rotation.z = -t * 0.09;
+      ring3.rotation.z = t * 0.05;
+      ring3.rotation.x = 0.9 + Math.sin(t * 0.15) * 0.1;
+      var pulse = 1 + Math.sin(t * 0.9) * 0.02;
+      sun.scale.setScalar(pulse); rim.scale.setScalar(pulse);
+      for(var j = 0; j < shapes.length; j++){
+        var m = shapes[j];
+        m.position.y = m.userData.y0 + Math.sin(t * m.userData.sp + m.userData.ph) * 0.35;
+        m.rotation.x += m.userData.rx;
+        m.rotation.y += m.userData.ry;
+      }
+      px += (tx - px) * 0.045; py += (ty - py) * 0.045;
+      group.position.x = px * 0.9;
+      group.position.y = -py * 0.6;
+      group.rotation.y = px * 0.06;
+      group.rotation.x = py * 0.04;
+      renderer.render(scene, camera);
+    })();
+  })();
+
+  /* ================= Anime.js hero entrance ================= */
+  if(window.anime && !reducedMotion){
+    document.documentElement.classList.add("js-anime");
+    try {
+      anime.set([".hero-eyebrow", ".role-line", ".hero-sub", ".hero-ctas", ".scroll-hint"], { opacity: 0, translateY: 14 });
+      anime.set(".sun-wrap", { opacity: 0, scale: 0.55 });
+      anime.set(".rex-frame", { opacity: 0, scale: 0.5, rotate: -10 });
+      anime.set(".speech", { opacity: 0, scale: 0.8 });
+      var tl = anime.timeline({ easing: "easeOutCubic", delay: 450,
+        complete: function(){
+          var sw = document.querySelector(".sun-wrap");
+          if(sw){ sw.style.transform = ""; sw.style.opacity = ""; }
+          var rf = document.querySelector(".rex-frame");
+          if(rf){ rf.style.transform = ""; rf.style.opacity = ""; }
+        }
+      });
+      tl.add({ targets: ".sun-wrap", opacity: [0, glOn ? 0.14 : 1], scale: [0.55, 1], duration: 900, easing: "easeOutExpo" })
+        .add({ targets: "h1.mega .row span", translateY: ["112%", "0%"], duration: 850, easing: "easeOutExpo", delay: anime.stagger(130) }, "-=550")
+        .add({ targets: ".hero-eyebrow", opacity: [0, 1], translateY: [14, 0], duration: 500 }, "-=600")
+        .add({ targets: ".role-line", opacity: [0, 1], translateY: [14, 0], duration: 500 }, "-=380")
+        .add({ targets: ".hero-sub", opacity: [0, 1], translateY: [14, 0], duration: 500 }, "-=360")
+        .add({ targets: ".hero-ctas", opacity: [0, 1], translateY: [14, 0], duration: 500 }, "-=360")
+        .add({ targets: ".rex-frame", opacity: [0, 1], scale: [0.5, 1], rotate: [-10, -2], duration: 900, easing: "easeOutElastic(1, .55)" }, "-=300")
+        .add({ targets: ".speech", opacity: [0, 1], scale: [0.8, 1], duration: 600, easing: "easeOutBack" }, "-=650")
+        .add({ targets: ".scroll-hint", opacity: [0, 1], translateY: [10, 0], duration: 450 }, "-=300");
+    } catch(e){
+      document.documentElement.classList.remove("js-anime");
+      try { anime.set([".hero-eyebrow", ".role-line", ".hero-sub", ".hero-ctas", ".scroll-hint", ".sun-wrap", ".rex-frame", ".speech"], { opacity: 1, translateY: 0, scale: 1 }); } catch(e2){}
+    }
+  }
+
+  /* ================= Anime.js domain card spring ================= */
+  if(window.anime && !reducedMotion){
+    document.querySelectorAll(".domain").forEach(function(card){
+      var busy = false;
+      function spring(){
+        if(busy) return;
+        busy = true;
+        anime({
+          targets: card, scale: [1, 1.04, 1], duration: 550, easing: "easeOutElastic(1, .5)",
+          complete: function(){ card.style.transform = ""; busy = false; }
+        });
+      }
+      card.addEventListener("mouseenter", spring);
+      card.addEventListener("click", spring);
+    });
+  }
 })();
 </script>
 </body>
