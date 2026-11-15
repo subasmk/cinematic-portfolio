@@ -74,6 +74,24 @@ h2.big .hl{color:var(--red)}
 .btn.ink{background:var(--ink);color:var(--paper);box-shadow:7px 7px 0 var(--red)}
 .btn.ink:hover{box-shadow:10px 10px 0 var(--red)}
 .btn.green{background:#128C7E;color:#fff}
+/* approved orange-disc hero */
+#gl{display:none!important}
+.sun-wrap{display:none!important}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:28px;align-items:center}
+.hero-copy{min-width:0}
+.hero-stage-wrap{min-width:0}
+.hstage{position:relative;aspect-ratio:1;width:min(100%,78vw);max-width:500px;margin:0 auto}
+.hdisc{position:absolute;inset:6%;background:#e0502b;border:4px solid var(--ink);border-radius:50%;box-shadow:10px 10px 0 var(--ink);overflow:hidden}
+.hdisc img{position:absolute;left:50%;bottom:7%;width:68%;height:auto;transform:translateX(-50%);pointer-events:none}
+.hchip{position:absolute;z-index:2;background:var(--cream-card,#fff7e6);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:7px 11px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;white-space:nowrap}
+.hstage .sun-hit{left:6%!important;top:6%!important;width:88%!important;height:88%!important;right:auto!important;z-index:3}
+.hspeech{max-width:420px;margin:22px auto 0}
+@media(min-width:900px){
+  .hero-grid{grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr);gap:40px}
+  .hstage{width:100%}
+  h1.mega{font-size:clamp(4.2rem,11vw,10rem)}
+}
+@media(max-width:640px){.hero .shape.ring{display:none}.hspeech{margin-top:18px;max-width:none}.hchip{font-size:10px;padding:5px 8px}}
 </style>
 <style>
 /* hero */
@@ -280,7 +298,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 </style>
 <style>
 /* round 5 — WebRex living character (the guide, upgraded to a pet) */
-#webrexStage{position:fixed;left:0;right:0;bottom:0;height:0;overflow:visible;z-index:1150;pointer-events:none;--petw:156px;--peth:124px;--petb:12px}
+#webrexStage{position:fixed;left:0;right:0;bottom:0;height:0;overflow:visible;z-index:1150;pointer-events:none;--petw:170px;--peth:170px;--petb:8px}
 #webrexBox{position:absolute;left:0;bottom:var(--petb);width:var(--petw);height:var(--peth);pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;will-change:transform}
 #webrexBox:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 #webrex{width:100%;height:100%;object-fit:contain;object-position:bottom center;user-select:none;-webkit-user-drag:none;pointer-events:none}
@@ -289,7 +307,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 #rexBubble.dozing{width:auto}
 #rexBubble{transition:opacity .45s ease}
 @media(max-width:640px){
-  #webrexStage{--petw:124px;--peth:96px;--petb:10px}
+  #webrexStage{--petw:132px;--peth:132px;--petb:8px}
   #rexBubble{width:172px}
 }
 </style>
@@ -350,16 +368,15 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
 <!-- ================= HERO ================= -->
 <section class="hero" data-guide="Woof! I'm Rex, his assistant. Scroll — I'll show you around.">
   <canvas id="gl" aria-hidden="true"></canvas>
-  <div class="sun-hit" id="sunHit" role="button" aria-label="Tap the sun" title="Tap the sun"></div>
-  <div class="sun-wrap" data-para="0.12" aria-hidden="true">
-    <div class="sun-ring"></div><div class="sun-ring2"></div><div class="sun"></div>
-  </div>
+  <div class="sun-wrap" data-para="0.12" aria-hidden="true"><div class="sun"></div></div>
   <div class="shape star" style="top:16%;left:4%" data-para="0.3" aria-hidden="true">✦</div>
   <div class="shape cross" style="top:64%;left:2%" data-para="0.2" aria-hidden="true">✚</div>
   <div class="shape ring" style="top:24%;left:46%" data-para="0.42" aria-hidden="true"></div>
   <div class="shape star" style="bottom:12%;right:6%;font-size:1.4rem" data-para="0.25" aria-hidden="true">✦</div>
 
   <div class="hero-inner">
+   <div class="hero-grid">
+    <div class="hero-copy">
     <p class="hero-eyebrow"><span class="eb-pill">PORTFOLIO — VOL. 01</span> <span class="eb-loc">COIMBATORE, INDIA</span></p>
     <h1 class="mega">
       <span class="row"><span>Subash</span></span>
@@ -375,14 +392,19 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
       <a class="btn red" href="#projects">See what I built ↓</a>
       <a class="btn" href="#contact">Let's talk →</a>
     </div>
-    <div class="hero-rex">
-      <figure class="rex-frame">
-        <img src="assets/rex-idle.png" alt="Rex the Shiba, Subash's desktop assistant" width="300" height="300" loading="eager">
-        <figcaption>REX — MY ASSISTANT</figcaption>
-      </figure>
-      <div class="speech">"That's my human. He built me first, then got ambitious. Keep scrolling — the good stuff compounds." 🐕</div>
-    </div>
     <p class="scroll-hint"><span class="arrow">↓</span> SCROLL — IT'S ALL TRUE, SOME OF IT IS EVEN FINISHED</p>
+    </div>
+    <div class="hero-stage-wrap">
+     <div class="hstage">
+      <div class="hdisc"><img src="assets/rex-idle.png" alt="Rex the Shiba, Subash's desktop assistant" width="300" height="300" loading="eager"></div>
+      <div class="hchip" style="left:0;top:8%;transform:rotate(-4deg)">● Open to internships</div>
+      <div class="hchip" style="right:0;top:20%;transform:rotate(3deg)">Founder · Nientra</div>
+      <div class="hchip" style="right:6%;bottom:6%;transform:rotate(-2deg)">Rex, my desktop assistant</div>
+      <div class="sun-hit" id="sunHit" role="button" aria-label="Tap the disc" title="Tap the disc"></div>
+     </div>
+     <div class="speech hspeech">"That's my human. He built me first, then got ambitious. Keep scrolling — the good stuff compounds." 🐕</div>
+    </div>
+   </div>
   </div>
 </section>
 
@@ -576,7 +598,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
 <div id="webrexStage">
   <div id="webrexBox" role="button" tabindex="0" aria-label="Rex the Shiba — tap him, drag him, or press Enter to chat" title="Rex — tap or drag him">
     <div id="rexBubble" aria-live="polite">Woof! I'm Rex. Scroll — I'll show you around.</div>
-    <img id="webrex" src="rex/idle.gif" alt="Rex the Shiba, site assistant" width="156" height="124" draggable="false">
+    <img id="webrex" src="assets/rex/idle.png" alt="Rex the Shiba, site assistant" width="170" height="170" draggable="false">
   </div>
 </div>
 
@@ -1425,17 +1447,17 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   if(!stage || !box || !img) return;
 
   var SRC = {
-    idle:"rex/idle.gif", idle_turn:"rex/idle_turn.gif", listening:"rex/listening.gif",
-    thinking:"rex/thinking.gif", sleeping:"rex/sleeping.gif", talking:"rex/talking.gif",
-    celebrate:"rex/celebrate.gif", working:"rex/working.gif", walk:"rex/walk.gif",
-    jump:"rex/jump.gif", fall:"rex/fall.gif", angry:"rex/angry.gif",
-    confused:"rex/confused.gif", wave:"rex/wave.gif", crawl:"rex/crawl.gif",
-    hit_single:"rex/hit_single.gif", hit_multi:"rex/hit_multi.gif",
-    tap_head:"rex/tap_head.gif", tap_belly:"rex/tap_belly.gif", tap_paw:"rex/tap_paw.gif",
-    tap_tail:"rex/tap_tail.gif", tap_sunglasses:"rex/tap_sunglasses.gif",
-    tap_nose:"rex/tap_nose.gif", tap_ear:"rex/tap_ear.gif", tap_back:"rex/tap_back.gif",
-    tap_leg:"rex/tap_leg.gif", tap_body:"rex/tap_body.gif",
-    tap_random:"rex/tap_random.gif", tap_multi:"rex/tap_multi.gif"
+    idle:"assets/rex/idle.png", idle_turn:"assets/rex/idle_turn.png", listening:"assets/rex/listening.png",
+    thinking:"assets/rex/thinking.png", sleeping:"assets/rex/sleeping.png", talking:"assets/rex/talking.png",
+    celebrate:"assets/rex/celebrate.png", working:"assets/rex/working.png", walk:"assets/rex/walk.png",
+    jump:"assets/rex/jump.png", fall:"assets/rex/fall.png", angry:"assets/rex/angry.png",
+    confused:"assets/rex/confused.png", wave:"assets/rex/wave.png", crawl:"assets/rex/crawl.png",
+    hit_single:"assets/rex/hit_single.png", hit_multi:"assets/rex/hit_multi.png",
+    tap_head:"assets/rex/tap_head.png", tap_belly:"assets/rex/tap_belly.png", tap_paw:"assets/rex/tap_paw.png",
+    tap_tail:"assets/rex/tap_tail.png", tap_sunglasses:"assets/rex/tap_sunglasses.png",
+    tap_nose:"assets/rex/tap_nose.png", tap_ear:"assets/rex/tap_ear.png", tap_back:"assets/rex/tap_back.png",
+    tap_leg:"assets/rex/tap_leg.png", tap_body:"assets/rex/tap_body.png",
+    tap_random:"assets/rex/tap_random.png", tap_multi:"assets/rex/tap_multi.png"
   };
   /* one-shot lengths measured from the GIF files themselves (ms) */
   var DUR = { idle_turn:960, celebrate:1600, wave:1320, jump:1440, fall:1800,
@@ -1472,7 +1494,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
      back-to-top button (z 1200), so Rex simply slides behind it at the far
      left instead of being fenced out of that corner */
   function minX(){ return 4; }
-  function maxX(){ return Math.max(minX(), window.innerWidth - petW() - 4); }
+  function maxX(){ return Math.max(minX(), document.documentElement.clientWidth - petW() - 4); }
   function clampX(v){ return Math.min(Math.max(v, minX()), maxX()); }
 
   function showGif(name, once){
@@ -1485,7 +1507,18 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     if(!bubble) return;
     var bw = bubble.offsetWidth || 196;
     var cx = x + petW() / 2;                       /* Rex's centre, viewport px */
-    var clamped = Math.min(Math.max(cx - bw / 2, 8), Math.max(8, window.innerWidth - bw - 8));
+    var vw = document.documentElement.clientWidth;
+    var clamped = Math.min(Math.max(cx - bw / 2, 8), Math.max(8, vw - bw - 8));
+    var cb = document.getElementById("rexChatBtn");
+    if(cb && cb.offsetWidth){
+      var cr = cb.getBoundingClientRect(), bh = bubble.offsetHeight || 60;
+      var bTop = window.innerHeight - (bubble.parentNode.getBoundingClientRect ? 0 : 0);
+      var br = bubble.getBoundingClientRect();
+      if(br.width && br.bottom > cr.top - 6 && br.top < cr.bottom + 6 && br.right + (clamped - cx) - (br.left - 0) > 0){
+        /* bubble would run under the chat button: keep it left of it */
+        clamped = Math.min(clamped, Math.max(8, cr.left - 10 - bw));
+      }
+    }
     bubble.style.transform = "translateX(" + (clamped - cx) + "px)";
     bubble.style.setProperty("--tail-x", Math.min(Math.max(cx - clamped, 16), Math.max(16, bw - 16)) + "px");
   }
