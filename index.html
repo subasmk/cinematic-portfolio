@@ -284,12 +284,36 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 #webrexBox{position:absolute;left:0;bottom:var(--petb);width:var(--petw);height:var(--peth);pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;will-change:transform}
 #webrexBox:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 #webrex{width:100%;height:100%;object-fit:contain;object-position:bottom center;user-select:none;-webkit-user-drag:none;pointer-events:none}
-#rexBubble{position:absolute;left:50%;bottom:calc(100% + 10px);width:196px;pointer-events:auto;background:#fff;border:var(--border);box-shadow:var(--shadow-sm);padding:9px 12px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;line-height:1.45;cursor:pointer;transition:opacity .3s}
+#rexBubble{position:absolute;left:50%;bottom:calc(100% + 10px);width:196px;pointer-events:auto;background:#f2eee5;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);opacity:1;padding:9px 12px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;line-height:1.45;cursor:pointer}
 #rexBubble::after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-13px;transform:translateX(-50%);border:6px solid transparent;border-top:10px solid var(--ink)}
-#rexBubble.dozing{opacity:.78;width:auto}
+#rexBubble.dozing{width:auto}
 @media(max-width:640px){
   #webrexStage{--petw:124px;--peth:96px;--petb:10px}
   #rexBubble{width:172px}
+}
+</style>
+<style>
+/* round 6 — Rex chat box (poster identity, fully opaque like the bubble) */
+#rexChatBtn{position:fixed;right:14px;bottom:152px;z-index:1160;background:var(--red);color:var(--paper);border:var(--border);box-shadow:var(--shadow-sm);font-family:'Space Mono',monospace;font-weight:700;font-size:.78rem;padding:11px 14px;cursor:pointer;transition:transform .13s,box-shadow .13s;-webkit-tap-highlight-color:transparent}
+#rexChatBtn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+#rexChatBtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+#rexChat{position:fixed;right:14px;bottom:208px;z-index:1165;width:min(92vw,350px);max-height:55vh;display:flex;flex-direction:column;background:#f2eee5;border:var(--border);box-shadow:var(--shadow);opacity:1}
+#rexChat[hidden]{display:none!important}
+.rexchat-head{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:var(--paper);padding:9px 12px;font-family:'Anton',sans-serif;font-size:.95rem;letter-spacing:.05em}
+#rexChatClose{background:var(--red);color:var(--paper);border:2px solid var(--paper);width:26px;height:26px;line-height:1;font-weight:700;cursor:pointer;flex:none}
+#rexChatMsgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:110px}
+.rmsg{max-width:85%;padding:8px 11px;font-size:.86rem;line-height:1.45;border:2.5px solid var(--ink);overflow-wrap:break-word}
+.rmsg.rex{background:#fff;align-self:flex-start;box-shadow:3px 3px 0 var(--ink)}
+.rmsg.me{background:var(--ink);color:var(--paper);align-self:flex-end;box-shadow:3px 3px 0 var(--red)}
+.rexchat-chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
+.rexchat-chips button{font-family:'Space Mono',monospace;font-size:.66rem;font-weight:700;border:2.5px solid var(--ink);background:var(--cream-card);color:var(--ink);padding:6px 9px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.rexchat-chips button:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+#rexChatForm{display:flex;border-top:var(--border);background:#fff}
+#rexChatInput{flex:1;min-width:0;border:none;background:#fff;color:var(--ink);padding:11px 12px;font-family:'Space Grotesk',sans-serif;font-size:16px;outline:none}
+#rexChatSend{background:var(--red);color:var(--paper);border:none;border-left:var(--border);font-family:'Space Mono',monospace;font-weight:700;font-size:.8rem;padding:0 16px;cursor:pointer}
+@media(max-width:640px){
+  #rexChatBtn{bottom:120px}
+  #rexChat{bottom:174px;right:8px;width:min(94vw,350px)}
 }
 </style>
 </head>
@@ -539,6 +563,23 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     <div id="rexBubble" aria-live="polite">Woof! I'm Rex. Scroll — I'll show you around.</div>
     <img id="webrex" src="rex/idle.gif" alt="Rex the Shiba, site assistant" width="156" height="124" draggable="false">
   </div>
+</div>
+
+<!-- round 6 — Rex chat box (local brain today; Gemini seam = WebRexBrain) -->
+<button id="rexChatBtn" type="button" aria-haspopup="dialog" aria-expanded="false">💬 Chat with Rex</button>
+<div id="rexChat" role="dialog" aria-label="Chat with Rex" hidden>
+  <div class="rexchat-head"><span>REX — SITE ASSISTANT</span><button id="rexChatClose" type="button" aria-label="Close chat">✕</button></div>
+  <div id="rexChatMsgs" aria-live="polite"></div>
+  <div class="rexchat-chips">
+    <button type="button" data-q="Tell me about Subash">About Subash</button>
+    <button type="button" data-q="What projects has he built?">Projects</button>
+    <button type="button" data-q="What services does Nientra offer and what do they cost?">Nientra services</button>
+    <button type="button" data-q="How do I contact Subash?">Contact</button>
+  </div>
+  <form id="rexChatForm">
+    <input id="rexChatInput" type="text" placeholder="Ask Rex anything…" autocomplete="off" maxlength="300">
+    <button id="rexChatSend" type="submit">Send</button>
+  </form>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1350,7 +1391,8 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
    every existing __rexSay caller (section lines, tips, sun, easter egg)
    now makes him talk, via the _talkStart/_talkEnd hooks in the round-3
    script. Public hooks for the future AI brain:
-     window.WebRex = { say(text), setState(name), celebrate(), ask() }     */
+     window.WebRex = { say(text), setState(name), celebrate(), ask(), park() }
+     plus openChat(), attached by the round-6 chat script at the end.     */
 (function(){
   "use strict";
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1394,8 +1436,11 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   var shotSeq = 0;
 
   function petW(){ return box.offsetWidth || 156; }
-  function minX(){ return window.innerWidth < 640 ? 88 : 16; }  /* on phones, keep clear of the bottom-left back-to-top button */
-  function maxX(){ return Math.max(minX(), window.innerWidth - petW() - 16); }
+  /* round 6: full-width roam — the stage (z 1150) sits under the bottom-left
+     back-to-top button (z 1200), so Rex simply slides behind it at the far
+     left instead of being fenced out of that corner */
+  function minX(){ return 4; }
+  function maxX(){ return Math.max(minX(), window.innerWidth - petW() - 4); }
   function clampX(v){ return Math.min(Math.max(v, minX()), maxX()); }
 
   function showGif(name, once){
@@ -1420,57 +1465,118 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 
   /* ---------- state helpers ---------- */
   var wanderTimer = null, shotTimer = null;
-  var walkTarget = 0, walkRAF = 0, walkLast = 0;
+  var walkTarget = 0, walkEndTimer = null, walkSeq = 0, transitioning = false;
   var talkResume = "idle";
+  var bootAt = Date.now(), firstWalkDone = false;
+
+  /* round 6: one bad state must never kill the behaviour loop — every
+     state-machine timer runs through guard(); on error he falls back to
+     idle and the wander loop reschedules itself */
+  function guard(fn){
+    return function(){
+      try { fn(); }
+      catch(e){ try { enterIdle(); } catch(e2){} }
+    };
+  }
 
   function enterIdle(){
     cur = "idle";
     showGif("idle");
     render();
     scheduleWander();
+    if(!firstWalkDone) setTimeout(guard(tryFirstWalk), 90);
   }
   function scheduleWander(){
     clearTimeout(wanderTimer);
     if(reduced) return;                            /* reduced motion: he stays parked */
-    wanderTimer = setTimeout(idleDecision, 7000 + Math.random() * 7000);
+    wanderTimer = setTimeout(guard(idleDecision), 6000 + Math.random() * 4000);
   }
   function idleDecision(){
     if(cur !== "idle" || document.hidden){ scheduleWander(); return; }
     var r = Math.random();
-    if(r < 0.50){ startWalk(); }
-    else if(r < 0.72){ playOnce(Math.random() < 0.5 ? "idle_turn" : "wave"); scheduleWander(); }
+    if(r < 0.62){ startWalk(false); }
+    else if(r < 0.82){ playOnce(Math.random() < 0.5 ? "idle_turn" : "wave"); scheduleWander(); }
     else scheduleWander();
   }
   function playOnce(name){
+    stopWalk();                                    /* freeze any glide first */
     cur = "oneshot";
     clearTimeout(shotTimer);
     showGif(name, true);
-    shotTimer = setTimeout(function(){
+    shotTimer = setTimeout(guard(function(){
       if(cur === "oneshot") enterIdle();
-    }, DUR[name] || 900);
+    }), DUR[name] || 900);
   }
-  function startWalk(){
-    var target = minX() + Math.random() * Math.max(maxX() - minX(), 0);
-    if(Math.abs(target - x) < 40){ scheduleWander(); return; }
+
+  /* round 6: walking is compositor-driven — a CSS transition on transform
+     (linear, duration = distance / 70px/s) instead of JS rAF stepping, so
+     the Three.js hero can hog the main thread and Rex still glides. The
+     old rAF walker + the 7–14s, 50%-coin-flip first decision (which every
+     ambient guide line reset via talkEnd -> enterIdle -> scheduleWander)
+     is why a phone visitor basically never saw him walk. */
+  function startWalk(forceFar){
+    if(reduced) return;
+    var lo = minX(), hi = maxX(), target;
+    if(forceFar){
+      var mid = (lo + hi) / 2, span = Math.max(hi - lo, 0);
+      target = x < mid ? hi - Math.random() * span * 0.25 : lo + Math.random() * span * 0.25;
+    } else {
+      target = lo + Math.random() * Math.max(hi - lo, 0);
+      if(Math.abs(target - x) < 40){ scheduleWander(); return; }
+    }
+    walkTo(target);
+  }
+  function walkTo(target){
+    clearTimeout(wanderTimer);
     cur = "walk";
     walkTarget = target;
     flipped = target > x;                          /* art faces left: flip to walk right */
     showGif("walk");
-    walkLast = performance.now();
-    cancelAnimationFrame(walkRAF);
-    walkRAF = requestAnimationFrame(walkStep);
-  }
-  function walkStep(now){
-    if(cur !== "walk") return;
-    var dt = Math.min((now - walkLast) / 1000, 0.05);
-    walkLast = now;
-    var dir = walkTarget > x ? 1 : -1;
-    x += dir * 55 * dt;                            /* ~55 px/s, matched to the gait loop */
-    if((dir > 0 && x >= walkTarget) || (dir < 0 && x <= walkTarget)){
-      x = walkTarget; render(); enterIdle(); return;
-    }
+    var dist = Math.abs(target - x);
+    var dur = Math.max(dist / 70 * 1000, 140);     /* ~70 px/s */
+    var seq = ++walkSeq;
+    transitioning = true;
+    box.style.transition = "transform " + dur + "ms linear";
+    x = target;
     render();
-    walkRAF = requestAnimationFrame(walkStep);
+    clearTimeout(walkEndTimer);
+    walkEndTimer = setTimeout(guard(function(){ if(seq === walkSeq) finishWalk(); }), dur + 180);
+  }
+  function finishWalk(){
+    if(cur !== "walk") return;
+    transitioning = false;
+    box.style.transition = "";
+    enterIdle();
+  }
+  box.addEventListener("transitionend", function(ev){
+    if(ev.propertyName === "transform" && cur === "walk") finishWalk();
+  });
+  /* freeze him exactly where he visually is, mid-glide */
+  function freezePos(){
+    var cs = "";
+    try { cs = window.getComputedStyle(box).transform || ""; } catch(e){}
+    if(cs && cs !== "none"){
+      var parts = cs.replace("matrix3d(", "").replace("matrix(", "").replace(")", "").split(",");
+      if(parts.length === 6){ x = parseFloat(parts[4]) || x; y = -(parseFloat(parts[5]) || 0); }
+      else if(parts.length === 16){ x = parseFloat(parts[12]) || x; y = -(parseFloat(parts[13]) || 0); }
+    }
+    transitioning = false;
+    box.style.transition = "none";
+    render();
+  }
+  function stopWalk(){
+    clearTimeout(walkEndTimer);
+    if(transitioning) freezePos();
+  }
+  /* the first wander is guaranteed, not a coin flip: ~3s after load he
+     walks across. If a guide line was typing at 3s, the enterIdle hook
+     retries until it happens */
+  function tryFirstWalk(){
+    if(firstWalkDone || reduced){ firstWalkDone = true; return; }
+    if(Date.now() - bootAt < 2800) return;         /* the 3s boot timer retries */
+    if(cur !== "idle") return;                     /* enterIdle retries */
+    firstWalkDone = true;
+    startWalk(true);
   }
 
   /* ---------- sleep / wake ---------- */
@@ -1479,7 +1585,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   function enterSleep(){
     cur = "sleep";
     clearTimeout(wanderTimer);
-    cancelAnimationFrame(walkRAF);
+    stopWalk();
     showGif("sleeping");
     if(bubble){ bubble.textContent = "Zzz…"; bubble.classList.add("dozing"); }
     render();
@@ -1496,10 +1602,10 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       if(ev === "pointerdown" && cur === "sleep") wake();
     }, { passive: true });
   });
-  setInterval(function(){
+  setInterval(guard(function(){
     if(document.hidden) return;
     if((cur === "idle" || cur === "walk") && Date.now() - lastAct > 60000) enterSleep();
-  }, 1000);
+  }), 1000);
   document.addEventListener("visibilitychange", function(){ if(!document.hidden) pokeActivity(); });
 
   /* ---------- talking (lip-sync hooks for the typewriter) ---------- */
@@ -1508,7 +1614,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     if(reduced) return;
     if(cur === "idle" || cur === "walk"){
       talkResume = cur;
-      if(cur === "walk") cancelAnimationFrame(walkRAF);
+      if(cur === "walk") stopWalk();              /* freeze mid-glide; walkTarget kept for the resume */
       cur = "talking";
       showGif("talking");
     }
@@ -1518,10 +1624,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   function talkEnd(){
     if(cur !== "talking") return;
     if(talkResume === "walk" && !reduced){
-      cur = "walk";
-      showGif("walk");
-      walkLast = performance.now();
-      walkRAF = requestAnimationFrame(walkStep);
+      walkTo(walkTarget);                          /* glide the rest of the way */
     } else {
       enterIdle();
     }
@@ -1556,7 +1659,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       cooldownUntil = now + 5000;
       cur = "oneshot";
       clearTimeout(shotTimer);
-      cancelAnimationFrame(walkRAF);
+      stopWalk();
       showGif("hit_multi", true);
       shotTimer = setTimeout(function(){
         if(cur !== "oneshot") return;
@@ -1579,7 +1682,8 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   function startDrag(){
     clearTimeout(shotTimer);
     clearTimeout(wanderTimer);
-    cancelAnimationFrame(walkRAF);
+    stopWalk();
+    box.style.transition = "none";                 /* the pointer drives him 1:1 now */
     cur = "drag";
     showGif("jump", true);
   }
@@ -1609,7 +1713,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     }
     if(dragInfo.moved && !reduced){
       x = clampX(dragInfo.bx + dx);
-      y = Math.min(Math.max(dragInfo.by - dy, 0), window.innerHeight * 0.45);
+      y = Math.min(Math.max(dragInfo.by - dy, 0), window.innerHeight * 0.60);
       render();
     }
   });
@@ -1621,24 +1725,24 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     if(!wasDrag || reduced) return;
     cur = "drop";
     showGif("fall", true);
-    var y0 = y, t0 = performance.now();
-    (function dropStep(now){
-      if(cur !== "drop") return;
-      var p = Math.min((now - t0) / 250, 1);       /* ~250ms fall to the floor line */
-      y = y0 * (1 - p);
-      render();
-      if(p < 1){ requestAnimationFrame(dropStep); return; }
-      y = 0; render();
-      /* land, dust off (rest of the fall.gif), then back to idle */
-      setTimeout(function(){ if(cur === "drop") enterIdle(); }, Math.max(DUR.fall - 250, 400));
-    })(t0);
+    /* round 6: the fall is a CSS transition too — no rAF stepping */
+    transitioning = true;
+    box.style.transition = "transform 260ms cubic-bezier(.55,.06,.85,1)";
+    y = 0;
+    render();
+    setTimeout(guard(function(){
+      transitioning = false;
+      box.style.transition = "";
+    }), 320);
+    /* land, dust off (rest of the fall.gif), then back to idle */
+    setTimeout(guard(function(){ if(cur === "drop") enterIdle(); }), Math.max(DUR.fall, 500));
   }
   box.addEventListener("pointerup", endDrag);
   box.addEventListener("pointercancel", endDrag);
   box.addEventListener("lostpointercapture", function(){ endDrag(null); });
   img.addEventListener("dragstart", function(ev){ ev.preventDefault(); });
   box.addEventListener("keydown", function(ev){
-    if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); ask(); }
+    if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); openChatOrAsk(); }
   });
 
   /* ---------- ask Rex (tap the bubble): listen -> think -> talk ----------
@@ -1657,25 +1761,32 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     askBusy = true;
     clearTimeout(wanderTimer);
     clearTimeout(shotTimer);
-    cancelAnimationFrame(walkRAF);
+    stopWalk();
     cur = "listening";
     showGif("listening");
-    setTimeout(function(){
+    setTimeout(guard(function(){
       if(cur !== "listening"){ askBusy = false; return; }
       cur = "thinking";
       showGif("thinking");
-      setTimeout(function(){
+      setTimeout(guard(function(){
         askBusy = false;
         if(cur !== "thinking") return;
         cur = "idle";
         say(askLines[askIdx++ % askLines.length]);  /* typing flips him to talking via the hooks */
         if(cur === "idle") enterIdle();            /* reduced-motion path: no talking state */
-      }, 900);
-    }, 1200);
+      }), 900);
+    }), 1200);
+  }
+  /* round 6: tapping the bubble (or Enter/Space on Rex) opens the real
+     chat box now — ask()'s canned listen->think->talk survives only as a
+     fallback if the chat script ever fails to load */
+  function openChatOrAsk(){
+    if(window.WebRex && window.WebRex.openChat) window.WebRex.openChat();
+    else ask();
   }
   if(bubble){
     bubble.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
-    bubble.addEventListener("click", function(ev){ ev.stopPropagation(); ask(); });
+    bubble.addEventListener("click", function(ev){ ev.stopPropagation(); openChatOrAsk(); });
   }
 
   /* ---------- celebrate (sun tap + first arrival at the end card) ---------- */
@@ -1703,19 +1814,29 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     if(!SRC[name]) return;
     clearTimeout(shotTimer);
     clearTimeout(wanderTimer);
-    cancelAnimationFrame(walkRAF);
+    stopWalk();
     if(bubble) bubble.classList.remove("dozing");
     if(name === "idle"){ enterIdle(); return; }
     if(name === "sleeping"){ enterSleep(); return; }
-    if(name === "walk"){ cur = "idle"; startWalk(); return; }
+    if(name === "walk"){ cur = "idle"; startWalk(false); return; }
     if(LOOPS[name]){ cur = "hold"; showGif(name); return; }
     playOnce(name);
+  }
+  /* park him in place holding a pose (chat open): no wander, no sleep */
+  function park(gifName){
+    stopWalk();
+    clearTimeout(wanderTimer);
+    clearTimeout(shotTimer);
+    if(bubble) bubble.classList.remove("dozing");
+    cur = "hold";
+    showGif(gifName && SRC[gifName] ? gifName : "idle");
   }
   window.WebRex = {
     say: say,
     setState: setState,
     celebrate: celebrate,
     ask: ask,
+    park: park,
     _talkStart: talkStart,
     _talkEnd: talkEnd
   };
@@ -1724,12 +1845,186 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   x = maxX();                                      /* start bottom-right, like the old guide */
   render();
   scheduleWander();
+  setTimeout(guard(tryFirstWalk), 3000);           /* round 6: guaranteed first wander */
+  setTimeout(guard(tryFirstWalk), 5200);           /* second chance if he was mid-line */
   window.addEventListener("resize", function(){ x = clampX(x); render(); });
-  window.addEventListener("load", function(){
-    ["idle", "walk", "sleeping", "talking", "tap_head"].forEach(function(n){
-      var i = new Image(); i.src = SRC[n];
+
+  /* round 6: preload ALL of his GIFs, staggered at idle time, so a state
+     swap never waits on the network or flashes a blank first frame */
+  var PRE = {};
+  function preloadAll(){
+    var names = Object.keys(SRC), i = 0;
+    (function next(){
+      if(i >= names.length) return;
+      var n = names[i++];
+      var im = new Image();
+      im.onload = im.onerror = function(){ PRE[n] = im; };
+      im.src = SRC[n];
+      if(window.requestIdleCallback) window.requestIdleCallback(next, { timeout: 500 });
+      else setTimeout(next, 50);
+    })();
+  }
+  window.addEventListener("load", function(){ setTimeout(preloadAll, 700); });
+})();
+</script>
+<script>
+/* ================= round 6 — Rex chat box + local brain =================
+   The chat UI talks ONLY to window.WebRexBrain.answer(text), which must
+   return a Promise<string>. Today that is a keyword brain running on
+   hand-checked facts (below). A remote brain (Gemini) can replace that
+   one object later without touching a line of the UI code. Rex's poses
+   during chat come from the round-5 state machine: park() when the box
+   opens, listening while the visitor types, thinking while the brain
+   answers, talking while the reply types out. */
+(function(){
+  "use strict";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- the local brain ---------- */
+  window.WebRexBrain = {
+    answer: async function(q){
+      var s = " " + String(q || "").toLowerCase().replace(/\s+/g, " ") + " ";
+      function has(){
+        for(var i = 0; i < arguments.length; i++){ if(s.indexOf(arguments[i]) !== -1) return true; }
+        return false;
+      }
+      var out;
+      if(has("whatsapp", "contact", "reach him", "phone", "email", "get in touch")){
+        out = "Easiest way to reach Subash: WhatsApp — wa.me/918778149499. He actually replies. His startup lives at nientra.xyz and his portfolio home is subashmk.xyz. 📲";
+      } else if(has("internship", "intern", "job", "hiring")){
+        out = "He's looking for an in-person internship in Coimbatore — AI or full-stack, somewhere he can ship real things. Know a team? WhatsApp him at wa.me/918778149499. 🎯";
+      } else if(has("price", "cost", "charge", "services", "service", "hire", "pilot")){
+        out = "Nientra builds for businesses: websites from ₹4,999, AI chat assistants from ₹7,999, and automation from ₹2,999. Want to test the waters first? There's a ₹999 pilot — a small paid trial. Full story at nientra.xyz. 💼";
+      } else if(has("nientra")){
+        out = "Nientra is Subash's startup — tagline: Work less. Win more. It builds websites, AI assistants and automation for businesses. Friendly warning: it's a startup, not a project. He will correct you. 😄";
+      } else if(has("domain", "skills", "skill", "tech stack", "nine")){
+        out = "One mind, nine domains: AI engineering & agents, full-stack, app dev, game dev, cybersecurity, cloud, DevOps, Blockchain/Web3 and reverse engineering. Honest statuses — Shipped: AI, full-stack, game dev. Building: app dev, cyber, cloud, DevOps. Exploring: Web3 and reverse engineering. 🗺️";
+      } else if(has("mockmentor")){
+        out = "MockMentor is his AI mock-interview coach: feed it your resume and it interviews you like the real thing, then tells you — kindly but honestly — where you fumbled. 🎤";
+      } else if(has("trackme")){
+        out = "TrackMe is his habit & learning tracker — small streaks, daily wins, zero guilt-trip notifications. It's the app he's actively shaping right now. 📈";
+      } else if(has("nuketown")){
+        out = "Nuketown is a gesture-controlled arena game — your hand is the controller, your webcam is the gate. It's playable live in the browser; the link is in the Projects section above. Go on, try it. 🎮";
+      } else if(has("project", "built", "builds", "portfolio", "his work")){
+        out = "Four named projects: Rex (me — a desktop-pet AI assistant), MockMentor (AI mock-interview coach), TrackMe (habit & learning tracker) and Nuketown (a playable gesture-controlled game). Scroll to The Work for the full cards. 🛠️";
+      } else if(has("subash", "about him", "who is he", "student", "college", "study")){
+        out = "Subash Mk — 19, from Coimbatore. Second-year B.Tech AI & Data Science student at VSB College of Engineering Technical Campus, and founder of Nientra. Student by day, builder by night. 🎓";
+      } else if(has("who are you", "your name", " rex", "dog", "shiba")){
+        out = "I'm Rex — a Shiba with sunglasses and strong opinions. Subash built me as a desktop-pet AI assistant first; this site is my web edition. I narrate, I react, I nap. 🐕";
+      } else if(has("hello", " hi ", "hey", "vanakkam", "woof")){
+        out = "Woof! Vanakkam! 🐕 I'm Rex, the site assistant. Ask me about Subash, his projects, his nine domains — or what Nientra can build for your business.";
+      } else {
+        out = "Hmm — that one's beyond my local brain today. 🧠 Try a chip below, ask about his projects or Nientra's prices, or ping Subash directly on WhatsApp: wa.me/918778149499.";
+      }
+      await new Promise(function(res){ setTimeout(res, 300 + Math.random() * 350); });
+      return out;
+    }
+  };
+
+  /* ---------- the chat UI ---------- */
+  var btn      = document.getElementById("rexChatBtn");
+  var panel    = document.getElementById("rexChat");
+  var msgs     = document.getElementById("rexChatMsgs");
+  var form     = document.getElementById("rexChatForm");
+  var input    = document.getElementById("rexChatInput");
+  var closeBtn = document.getElementById("rexChatClose");
+  if(!btn || !panel || !msgs || !form || !input) return;
+
+  var opened = false, greeted = false, answering = false, typing = false, typeInt = null;
+
+  function rexSet(name){ if(window.WebRex) window.WebRex.setState(name); }
+  function rexPark(){ if(window.WebRex && window.WebRex.park) window.WebRex.park(); }
+  function scrollMsgs(){ msgs.scrollTop = msgs.scrollHeight; }
+  function addMsg(text, who){
+    var d = document.createElement("div");
+    d.className = "rmsg " + who;
+    d.textContent = text;
+    msgs.appendChild(d);
+    scrollMsgs();
+    return d;
+  }
+  function settlePose(){
+    /* after a reply: listening while the visitor is typing / focused,
+       otherwise parked idle — he never wanders off mid-conversation */
+    if(!opened) return;
+    if(document.activeElement === input || input.value) rexSet("listening");
+    else rexPark();
+  }
+  function typeRex(text){
+    var el = addMsg("", "rex");
+    typing = true;
+    rexSet("talking");
+    function done(){
+      if(typeInt){ clearInterval(typeInt); typeInt = null; }
+      el.textContent = text;
+      typing = false;
+      scrollMsgs();
+      settlePose();
+    }
+    if(reduced){ done(); return; }
+    el.addEventListener("click", done);            /* tap the message to complete it instantly */
+    var i = 0;
+    typeInt = setInterval(function(){
+      i += 1;
+      el.textContent = text.slice(0, i);
+      scrollMsgs();
+      if(i >= text.length) done();
+    }, 12);
+  }
+  function send(text){
+    text = String(text || "").trim();
+    if(!text || answering) return;
+    addMsg(text, "me");
+    input.value = "";
+    answering = true;
+    rexSet("thinking");
+    var brain = (window.WebRexBrain && window.WebRexBrain.answer)
+      ? window.WebRexBrain.answer(text)
+      : Promise.resolve("Woof — my brain is offline today. Try WhatsApp: wa.me/918778149499.");
+    Promise.resolve(brain).then(function(ans){
+      answering = false;
+      typeRex(String(ans || "Woof."));
+    }).catch(function(){
+      answering = false;
+      typeRex("Something glitched in my brain. 🐾 Try a chip — or WhatsApp Subash directly: wa.me/918778149499.");
     });
+  }
+  function openChat(){
+    if(opened){ try { input.focus(); } catch(e){} return; }
+    opened = true;
+    panel.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+    rexPark();                                     /* he stops wandering and stays for the chat */
+    if(!greeted){
+      greeted = true;
+      typeRex("Woof! I'm Rex 🐕 Ask me about Subash, his projects, his nine domains — or what Nientra can build for you. Chips below, or just type.");
+    }
+    try { input.focus(); } catch(e){}
+  }
+  function closeChat(){
+    if(!opened) return;
+    opened = false;
+    panel.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+    if(typeInt){ clearInterval(typeInt); typeInt = null; }
+    typing = false;
+    rexSet("idle");                                /* back to wandering */
+  }
+  btn.addEventListener("click", function(){ if(opened) closeChat(); else openChat(); });
+  if(closeBtn) closeBtn.addEventListener("click", closeChat);
+  document.addEventListener("keydown", function(ev){ if(ev.key === "Escape" && opened) closeChat(); });
+  form.addEventListener("submit", function(ev){ ev.preventDefault(); send(input.value); });
+  input.addEventListener("focus", function(){ if(opened && !answering && !typing) rexSet("listening"); });
+  input.addEventListener("input", function(){ if(opened && !answering && !typing && input.value) rexSet("listening"); });
+  input.addEventListener("blur", function(){ if(opened && !answering && !typing) rexPark(); });
+  panel.querySelectorAll(".rexchat-chips button").forEach(function(chip){
+    chip.addEventListener("click", function(){ send(chip.getAttribute("data-q") || chip.textContent); });
   });
+
+  if(window.WebRex){
+    window.WebRex.openChat = openChat;
+    window.WebRex.closeChat = closeChat;
+  }
 })();
 </script>
 </body>
