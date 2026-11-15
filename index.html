@@ -77,7 +77,7 @@ h2.big .hl{color:var(--red)}
 </style>
 <style>
 /* hero */
-.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:104px;overflow:visible}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:104px;overflow:hidden}
 .sun-wrap{position:absolute;top:2%;right:-80px;width:300px;height:300px;z-index:0;pointer-events:none}
 .sun{position:absolute;inset:40px;background:var(--red);border:4px solid var(--ink);border-radius:50%;animation:sunPulse 5s ease-in-out infinite}
 .sun-ring{position:absolute;inset:0;border:3px dashed var(--ink);border-radius:50%;animation:spin 46s linear infinite}
@@ -90,9 +90,11 @@ h2.big .hl{color:var(--red)}
 .shape.cross{font-size:1.5rem;color:var(--ink);animation:floaty 6.5s ease-in-out infinite reverse}
 .shape.ring{width:32px;height:32px;border:3px solid var(--ink);border-radius:50%;animation:floaty 7s ease-in-out infinite}
 @keyframes floaty{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-14px) rotate(10deg)}}
-.hero-inner{position:relative;z-index:2}
-.hero-eyebrow{font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;letter-spacing:.14em;margin-bottom:12px}
-.hero-eyebrow span{background:var(--ink);color:var(--paper);padding:4px 9px}
+.hero-inner{position:relative;z-index:5}
+.hero-eyebrow,.hero-inner h1.mega,.role-line,.hero-sub,.hero-ctas{position:relative;z-index:5}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;letter-spacing:.14em;margin-bottom:12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.hero-eyebrow .eb-pill{background:var(--ink);color:var(--paper);padding:4px 9px}
+.hero-eyebrow .eb-loc{white-space:nowrap}
 h1.mega{font-family:'Anton',sans-serif;text-transform:uppercase;line-height:.9;font-size:clamp(4.2rem,17.5vw,11.5rem)}
 h1.mega .row{display:block;overflow:hidden;padding-bottom:.06em}
 h1.mega .row span{display:inline-block;transform:translateY(112%);animation:riseIn .9s cubic-bezier(.22,1,.36,1) forwards}
@@ -263,6 +265,20 @@ html.js-anime h1.mega .row span{animation:none}
 .confetti{position:fixed;width:9px;height:9px;z-index:1800;pointer-events:none;border:2px solid var(--ink)}
 footer a{background-image:linear-gradient(var(--red),var(--red));background-repeat:no-repeat;background-size:0% 100%;transition:background-size .3s ease,color .3s ease}
 footer a:hover{background-size:100% 100%;color:var(--paper)}
+/* round 4 — phone hero fixes (clean view at 360–400px) */
+@media(max-width:640px){
+  /* CSS fallback sun (no-WebGL) becomes a small corner accent: 150px wrap,
+     disc = 150 − 2×20 inset = 110px, tucked top-right, edge crop intended */
+  .sun-wrap{width:150px;height:150px;right:-45px;top:1%}
+  .sun-wrap .sun{inset:20px}
+  /* Rex card: no tilt, fully on-screen; speech bubble stacks below the card
+     in normal flow (tail flipped to point up at the card) */
+  .hero-rex{flex-direction:column;align-items:stretch;gap:0}
+  .rex-frame{transform:none;align-self:flex-start}
+  .rex-frame:hover{transform:none}
+  .speech{max-width:none;margin:16px 0 0}
+  .speech::before{left:26px;top:-15px;bottom:auto;border:7px solid transparent;border-bottom:12px solid var(--ink)}
+}
 @media (prefers-reduced-motion: reduce){
   #topBtn{transition:none}
   .lvl-fill,.stat-fill{transition:none}
@@ -297,7 +313,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   <div class="shape star" style="bottom:12%;right:6%;font-size:1.4rem" data-para="0.25" aria-hidden="true">✦</div>
 
   <div class="hero-inner">
-    <p class="hero-eyebrow"><span>PORTFOLIO — VOL. 01</span>&nbsp; COIMBATORE, INDIA</p>
+    <p class="hero-eyebrow"><span class="eb-pill">PORTFOLIO — VOL. 01</span> <span class="eb-loc">COIMBATORE, INDIA</span></p>
     <h1 class="mega">
       <span class="row"><span>Subash</span></span>
       <span class="row r2"><span>Mk</span></span>
@@ -776,6 +792,8 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       mesh.rotation.set(Math.random() * 3, Math.random() * 3, 0);
       mesh.userData = {
         y0: mesh.position.y,
+        hx: mesh.position.x,
+        hy: mesh.position.y,
         sp: 0.4 + Math.random() * 0.7,
         ph: Math.random() * 6.28,
         rx: (Math.random() - 0.5) * 0.012,
@@ -785,25 +803,74 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       group.add(mesh);
     }
 
-    /* responsive fit — sun hugs the right edge on narrow screens, like the CSS sun */
+    /* responsive fit — placement computed from the camera frustum, not
+       guessed: visible height at z=0 is 2·tan(fov/2)·dist (fov 45, dist 15
+       → 12.43 world units); visible width = that × aspect */
     var baseScale = 1, scrollScale = 1;
     function applyScale(){ group.scale.setScalar(baseScale * scrollScale); }
+    function restoreShapes(){
+      for(var i = 0; i < shapes.length; i++){
+        var m = shapes[i];
+        m.visible = true;
+        m.position.x = m.userData.hx;
+        m.userData.y0 = m.userData.hy;
+        m.position.y = m.userData.hy;
+      }
+    }
     function resize(){
       var w = hero.clientWidth || 1, h = hero.clientHeight || 1;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
-      if(camera.aspect < 0.9){
-        /* phone: small sun tucked into the top-right corner (partly cropped
-           by the hero edge is fine) + half the shapes hidden — no overlap
-           with the text column, ever */
+      camera.updateProjectionMatrix();
+      var visH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov * 0.5)) * camera.position.z;
+      var visW = visH * camera.aspect;
+      var i, m;
+      if(camera.aspect < 0.75){
+        /* real phones (aspect ≈ 0.46–0.5 — the old <0.9 branch used a
+           position that only worked for squarish screens). Place the sun by
+           screen fractions so overlap is impossible: group scale 0.40, disc
+           centre at 78% of the width and 15% of the height. At aspect 0.5
+           (visW 6.21): centre (1.74, 4.35); the disc (r 2.55 × 0.40 = 1.02)
+           spans 61.6%→94.4% of the width and 6.8%→23.2% of the height —
+           top-right corner, beside the title line, bottom edge far above
+           the role pill. Hero text also paints above the canvas (z-index),
+           so even the tilted rings can never cut a word. */
+        sunGroup.scale.setScalar(0.40);
+        sunGroup.position.set(visW * 0.28, visH * 0.35, 0);
+        /* shapes: max 3, small, pinned to the top strip of the right half
+           (world y 3.4–5.5 ≈ 5–23% from the top, above the role pill) */
+        for(i = 0; i < shapes.length; i++){
+          m = shapes[i];
+          m.visible = i < 3;
+          if(i < 3){
+            m.position.x = visW * (0.02 + i * 0.14);
+            m.userData.y0 = 3.4 + i * 1.05;
+            m.position.y = m.userData.y0;
+          }
+        }
+      } else if(camera.aspect < 0.9){
         sunGroup.position.set(2.35, 3.15, 0); sunGroup.scale.setScalar(0.55);
-        for(var s2 = 0; s2 < shapes.length; s2++){ shapes[s2].visible = s2 < 3; }
+        restoreShapes();
       } else {
         sunGroup.position.set(5.4, 2.5, 0); sunGroup.scale.setScalar(0.85);
-        for(var s3 = 0; s3 < shapes.length; s3++){ shapes[s3].visible = true; }
+        restoreShapes();
+      }
+      /* keep the tappable-sun hit area exactly over the rendered disc
+         (rim outer radius 2.76 × effective group scale), in hero fractions —
+         the click handler reads the hit rect, so the ping follows too */
+      var hit = document.getElementById("sunHit");
+      if(hit){
+        var eff = sunGroup.scale.x * group.scale.x;
+        var dW = 2 * 2.76 * eff / visW, dH = 2 * 2.76 * eff / visH;
+        var cxF = (sunGroup.position.x + group.position.x) / visW + 0.5;
+        var cyF = 0.5 - (sunGroup.position.y + group.position.y) / visH;
+        hit.style.left = ((cxF - dW / 2) * 100) + "%";
+        hit.style.top = ((cyF - dH / 2) * 100) + "%";
+        hit.style.width = (dW * 100) + "%";
+        hit.style.height = (dH * 100) + "%";
+        hit.style.right = "auto";
       }
       applyScale();
-      camera.updateProjectionMatrix();
     }
     resize();
     window.addEventListener("resize", resize);
