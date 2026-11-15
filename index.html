@@ -274,10 +274,6 @@ html.js-anime h1.mega .row span{animation:none}
 .project:hover .glare{opacity:1}
 .project .shine{position:absolute;top:-10%;bottom:-10%;left:-70%;width:45%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg)}
 .project:hover .shine{left:130%;transition:left .8s ease}
-#topBtn{position:fixed;left:14px;bottom:14px;z-index:1200;width:56px;height:56px;border-radius:50%;border:var(--border);background:var(--cream-card);box-shadow:var(--shadow-sm);padding:4px;cursor:pointer;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .3s,transform .3s}
-#topBtn.show{opacity:1;pointer-events:auto;transform:none}
-#topBtn img{border-radius:50%}
-#topBtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
 .confetti{position:fixed;width:9px;height:9px;z-index:1800;pointer-events:none;border:2px solid var(--ink)}
 footer a{background-image:linear-gradient(var(--red),var(--red));background-repeat:no-repeat;background-size:0% 100%;transition:background-size .3s ease,color .3s ease}
 footer a:hover{background-size:100% 100%;color:var(--paper)}
@@ -296,7 +292,6 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   .speech::before{left:26px;top:-15px;bottom:auto;border:7px solid transparent;border-bottom:12px solid var(--ink)}
 }
 @media (prefers-reduced-motion: reduce){
-  #topBtn{transition:none}
   .lvl-fill,.stat-fill{transition:none}
 }
 </style>
@@ -317,10 +312,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 </style>
 <style>
 /* round 6 — Rex chat box (poster identity, fully opaque like the bubble) */
-#rexChatBtn{position:fixed;right:14px;bottom:152px;z-index:1160;background:var(--red);color:var(--paper);border:var(--border);box-shadow:var(--shadow-sm);font-family:'Space Mono',monospace;font-weight:700;font-size:.78rem;padding:11px 14px;cursor:pointer;transition:transform .13s,box-shadow .13s;-webkit-tap-highlight-color:transparent}
-#rexChatBtn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
-#rexChatBtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-#rexChat{position:fixed;right:14px;bottom:208px;z-index:1165;width:min(92vw,350px);max-height:55vh;display:flex;flex-direction:column;background:#f2eee5;border:var(--border);box-shadow:var(--shadow);opacity:1}
+#rexChat{position:fixed;right:14px;bottom:16px;z-index:1165;width:min(92vw,350px);max-height:55vh;display:flex;flex-direction:column;background:#f2eee5;border:var(--border);box-shadow:var(--shadow);opacity:1}
 #rexChat[hidden]{display:none!important}
 .rexchat-head{display:flex;justify-content:space-between;align-items:center;background:var(--ink);color:var(--paper);padding:9px 12px;font-family:'Anton',sans-serif;font-size:.95rem;letter-spacing:.05em}
 #rexChatClose{background:var(--red);color:var(--paper);border:2px solid var(--paper);width:26px;height:26px;line-height:1;font-weight:700;cursor:pointer;flex:none}
@@ -335,8 +327,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 #rexChatInput{flex:1;min-width:0;border:none;background:#fff;color:var(--ink);padding:11px 12px;font-family:'Space Grotesk',sans-serif;font-size:16px;outline:none}
 #rexChatSend{background:var(--red);color:var(--paper);border:none;border-left:var(--border);font-family:'Space Mono',monospace;font-weight:700;font-size:.8rem;padding:0 16px;cursor:pointer}
 @media(max-width:640px){
-  #rexChatBtn{bottom:120px}
-  #rexChat{bottom:174px;right:8px;width:min(94vw,350px)}
+  #rexChat{bottom:10px;right:8px;width:min(94vw,350px)}
 }
 
 /* round 7 — clean Rex art, project diagrams, drag personality */
@@ -593,11 +584,6 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   <span>SITE ASSISTANT: <a href="#top">REX 🐕</a></span>
 </footer>
 
-<!-- back-to-top Rex -->
-<button id="topBtn" type="button" aria-label="Back to top">
-  <img src="assets/rex-idle.png" alt="Rex — back to top" width="100" height="100" loading="lazy">
-</button>
-
 <!-- WebRex — the living site assistant (the old guide, upgraded to a character) -->
 <div id="webrexStage" style="visibility:hidden">
   <div id="rexBubble" aria-live="polite">Psst… drag me OUT of this disc. ☀️</div>
@@ -607,7 +593,6 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
 </div>
 
 <!-- round 6 — Rex chat box (local brain today; Gemini seam = WebRexBrain) -->
-<button id="rexChatBtn" type="button" aria-haspopup="dialog" aria-expanded="false">💬 Chat with Rex</button>
 <div id="rexChat" role="dialog" aria-label="Chat with Rex" hidden>
   <div class="rexchat-head"><span>REX — SITE ASSISTANT</span><button id="rexChatClose" type="button" aria-label="Close chat">✕</button></div>
   <div id="rexChatMsgs" aria-live="polite"></div>
@@ -1361,24 +1346,6 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
       new IntersectionObserver(function(en){ if(en[0].isIntersecting) linger = 0; }, { threshold: 0.35 }).observe(s);
     });
     document.addEventListener("pointerdown", function(){ linger = 0; }, { passive: true });
-  }
-
-  /* ---------- 11. back-to-top Rex ---------- */
-  var topBtn = document.getElementById("topBtn");
-  if(topBtn){
-    var proj = document.getElementById("projects");
-    var topTick = false;
-    window.addEventListener("scroll", function(){
-      if(topTick) return; topTick = true;
-      requestAnimationFrame(function(){
-        var past = proj ? (window.scrollY > proj.offsetTop + proj.offsetHeight * 0.4) : (window.scrollY > 1200);
-        topBtn.classList.toggle("show", past);
-        topTick = false;
-      });
-    }, { passive: true });
-    topBtn.addEventListener("click", function(){
-      window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
-    });
   }
 
   /* ---------- 12. easter egg — 5 fast taps on the hero Rex photo ---------- */
@@ -2200,7 +2167,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   var form     = document.getElementById("rexChatForm");
   var input    = document.getElementById("rexChatInput");
   var closeBtn = document.getElementById("rexChatClose");
-  if(!btn || !panel || !msgs || !form || !input) return;
+  if(!panel || !msgs || !form || !input) return;   /* the visible chat button was removed; the panel opens via Rex's bubble */
 
   var opened = false, greeted = false, answering = false, typing = false, typeInt = null;
 
@@ -2265,7 +2232,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     if(opened){ try { input.focus(); } catch(e){} return; }
     opened = true;
     panel.hidden = false;
-    btn.setAttribute("aria-expanded", "true");
+    if(btn) btn.setAttribute("aria-expanded", "true");
     rexPark();                                     /* he stops wandering and stays for the chat */
     if(!greeted){
       greeted = true;
@@ -2277,12 +2244,12 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     if(!opened) return;
     opened = false;
     panel.hidden = true;
-    btn.setAttribute("aria-expanded", "false");
+    if(btn) btn.setAttribute("aria-expanded", "false");
     if(typeInt){ clearInterval(typeInt); typeInt = null; }
     typing = false;
     rexSet("idle");                                /* back to wandering */
   }
-  btn.addEventListener("click", function(){ if(opened) closeChat(); else openChat(); });
+  if(btn) btn.addEventListener("click", function(){ if(opened) closeChat(); else openChat(); });
   if(closeBtn) closeBtn.addEventListener("click", closeChat);
   document.addEventListener("keydown", function(ev){ if(ev.key === "Escape" && opened) closeChat(); });
   form.addEventListener("submit", function(ev){ ev.preventDefault(); send(input.value); });
