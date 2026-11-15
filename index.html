@@ -207,13 +207,8 @@ h1.mega .row.r2 span{animation-delay:.55s;color:var(--red)}
 footer{border-top:var(--border);padding:26px 18px 110px;max-width:1120px;margin:0 auto;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700}
 footer a{text-decoration:none;border-bottom:2.5px solid var(--red)}
 
-/* floating Rex guide */
-.rex-guide{position:fixed;right:14px;bottom:14px;z-index:1200;display:flex;align-items:flex-end;gap:10px}
-.rex-bubble{background:#fff;border:var(--border);box-shadow:var(--shadow-sm);padding:9px 12px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;line-height:1.45;max-width:190px;position:relative;transition:opacity .3s}
-.rex-bubble::after{content:"";position:absolute;right:-13px;bottom:14px;border:6px solid transparent;border-left:10px solid var(--ink)}
-.rex-guide button{background:var(--cream-card);border:var(--border);box-shadow:var(--shadow-sm);width:74px;padding:5px;cursor:pointer;transform:rotate(2deg);transition:transform .15s}
-.rex-guide button:hover{transform:rotate(-2deg) scale(1.06)}
-.rex-guide button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+/* the old fixed .rex-guide is gone — Rex is a living character now;
+   his stage + bubble styles live in the round-5 style block below */
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -246,7 +241,6 @@ html.js-anime h1.mega .row span{animation:none}
 .btn{transition:transform .13s,box-shadow .13s,translate .18s ease-out}
 .btn:active{transform:translate(2px,2px) scale(.96);box-shadow:2px 2px 0 var(--ink)}
 .btn.ink:active{box-shadow:2px 2px 0 var(--red)}
-.rex-guide button:active{transform:translate(2px,2px) scale(.94);box-shadow:1px 1px 0 var(--ink)}
 .domain:active{transform:scale(.985)}
 .navlinks a{position:relative}
 .navlinks a::after{content:"";position:absolute;left:10px;right:10px;bottom:4px;height:3px;background:var(--red);transform:scaleX(0);transform-origin:0 50%;transition:transform .25s ease}
@@ -282,6 +276,20 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 @media (prefers-reduced-motion: reduce){
   #topBtn{transition:none}
   .lvl-fill,.stat-fill{transition:none}
+}
+</style>
+<style>
+/* round 5 — WebRex living character (the guide, upgraded to a pet) */
+#webrexStage{position:fixed;left:0;right:0;bottom:0;height:0;overflow:visible;z-index:1150;pointer-events:none;--petw:156px;--peth:124px;--petb:12px}
+#webrexBox{position:absolute;left:0;bottom:var(--petb);width:var(--petw);height:var(--peth);pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;will-change:transform}
+#webrexBox:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+#webrex{width:100%;height:100%;object-fit:contain;object-position:bottom center;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#rexBubble{position:absolute;left:50%;bottom:calc(100% + 10px);width:196px;pointer-events:auto;background:#fff;border:var(--border);box-shadow:var(--shadow-sm);padding:9px 12px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;line-height:1.45;cursor:pointer;transition:opacity .3s}
+#rexBubble::after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-13px;transform:translateX(-50%);border:6px solid transparent;border-top:10px solid var(--ink)}
+#rexBubble.dozing{opacity:.78;width:auto}
+@media(max-width:640px){
+  #webrexStage{--petw:124px;--peth:96px;--petb:10px}
+  #rexBubble{width:172px}
 }
 </style>
 </head>
@@ -525,12 +533,12 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   <img src="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif" alt="Rex — back to top" width="100" height="100" loading="lazy">
 </button>
 
-<!-- floating Rex guide -->
-<div class="rex-guide" aria-live="polite">
-  <div class="rex-bubble" id="rexBubble">Woof! I'm Rex. Scroll — I'll show you around.</div>
-  <button id="rexBtn" type="button" aria-label="Rex — say hi">
-    <img src="https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif" alt="Rex the Shiba" width="120" height="120" loading="lazy">
-  </button>
+<!-- WebRex — the living site assistant (the old guide, upgraded to a character) -->
+<div id="webrexStage">
+  <div id="webrexBox" role="button" tabindex="0" aria-label="Rex the Shiba — tap him, drag him, or press Enter to chat" title="Rex — tap or drag him">
+    <div id="rexBubble" aria-live="polite">Woof! I'm Rex. Scroll — I'll show you around.</div>
+    <img id="webrex" src="rex/idle.gif" alt="Rex the Shiba, site assistant" width="156" height="124" draggable="false">
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -714,7 +722,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     });
   }, {threshold: .35});
   document.querySelectorAll("[data-guide]").forEach(function(el){ guideIO.observe(el); });
-  /* rexBtn tap behaviour (celebrate jump) is owned by the round-3 script */
+  /* Rex himself — the living character — is owned by the round-5 WebRex script */
 })();
 </script>
 <script>
@@ -1003,14 +1011,16 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   var typeTimer = null;
   window.__rexSay = function(text){
     if(!bubble || !text) return;
+    /* round 5: WebRex lip-syncs (talking.gif) while the bubble types */
+    if(window.WebRex && window.WebRex._talkStart) window.WebRex._talkStart();
     if(typeTimer){ clearInterval(typeTimer); typeTimer = null; }
-    if(reduced){ bubble.textContent = text; return; }
+    if(reduced){ bubble.textContent = text; if(window.WebRex && window.WebRex._talkEnd) window.WebRex._talkEnd(); return; }
     var i = 0;
     bubble.textContent = "";
     typeTimer = setInterval(function(){
       i += 2;
       bubble.textContent = text.slice(0, i);
-      if(i >= text.length){ clearInterval(typeTimer); typeTimer = null; bubble.textContent = text; }
+      if(i >= text.length){ clearInterval(typeTimer); typeTimer = null; bubble.textContent = text; if(window.WebRex && window.WebRex._talkEnd) window.WebRex._talkEnd(); }
     }, 16);
   };
 
@@ -1069,6 +1079,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
           });
         }
       }
+      if(window.WebRex) window.WebRex.celebrate();
       window.__rexSay("That's my sun. I nap under it. 😴");
     });
   }
@@ -1236,36 +1247,9 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
     }, { passive: true });
   }
 
-  /* ---------- 8. Rex guide — tap = celebrate jump ---------- */
-  var rexBtn = document.getElementById("rexBtn");
-  var rexImg = rexBtn ? rexBtn.querySelector("img") : null;
-  var REX_IDLE = "https://raw.githubusercontent.com/subasmk/shiba-desktop/main/idle_breathe.gif";
-  var REX_PARTY = "https://raw.githubusercontent.com/subasmk/shiba-desktop/main/celebrate_jump.gif";
-  var rexBusy = false, rexLineIdx = 0;
-  var rexLines = [
-    "Woof! Okay, okay — I'm awake. 🐕",
-    "That's the spirit. Now tap a domain card — I do tricks.",
-    "Tail wagging. Officially approved interaction. ✅"
-  ];
-  if(rexBtn){
-    rexBtn.addEventListener("click", function(){
-      if(rexBusy) return;
-      rexBusy = true;
-      window.__rexSay(rexLines[rexLineIdx % rexLines.length]); rexLineIdx++;
-      if(!reduced && rexImg){
-        rexImg.src = REX_PARTY;
-        if(A){
-          A({
-            targets: rexBtn, translateY: [0, -13, 0, -6, 0], duration: 620, easing: "easeOutQuad",
-            complete: function(){ rexBtn.style.transform = ""; }
-          });
-        }
-        setTimeout(function(){ rexImg.src = REX_IDLE; rexBusy = false; }, 1200);
-      } else {
-        rexBusy = false;
-      }
-    });
-  }
+  /* ---------- 8. (removed) the old guide button's tap handler — Rex is a
+     full character now; his taps, drags and chats live in the round-5
+     WebRex script at the end of this file ---------- */
 
   /* ---------- 8b. Rex idle tips while the visitor lingers ---------- */
   var tips = [
@@ -1319,6 +1303,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       if(taps >= 5){
         taps = 0;
         window.__rexSay("Okay okay, I'm awake. Let's build something. 🐕");
+        if(window.WebRex) window.WebRex.celebrate();
         if(!reduced && A) confetti(frame);
       }
     });
@@ -1353,6 +1338,398 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       })(p);
     }
   }
+})();
+</script>
+<script>
+/* ================= round 5 — WebRex, the living character =================
+   Rex is no longer a fixed sticker in the corner. He lives at the foot of
+   the page: wanders on his own, sleeps when the visitor goes quiet, wakes
+   on any touch, reacts to taps per body part (tap his belly, he giggles;
+   spam-tap him, he gets angry), can be picked up and dropped, and lip-syncs
+   while his bubble types. The bubble is the old guide bubble (#rexBubble) —
+   every existing __rexSay caller (section lines, tips, sun, easter egg)
+   now makes him talk, via the _talkStart/_talkEnd hooks in the round-3
+   script. Public hooks for the future AI brain:
+     window.WebRex = { say(text), setState(name), celebrate(), ask() }     */
+(function(){
+  "use strict";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var stage  = document.getElementById("webrexStage");
+  var box    = document.getElementById("webrexBox");
+  var img    = document.getElementById("webrex");
+  var bubble = document.getElementById("rexBubble");
+  if(!stage || !box || !img) return;
+
+  var SRC = {
+    idle:"rex/idle.gif", idle_turn:"rex/idle_turn.gif", listening:"rex/listening.gif",
+    thinking:"rex/thinking.gif", sleeping:"rex/sleeping.gif", talking:"rex/talking.gif",
+    celebrate:"rex/celebrate.gif", working:"rex/working.gif", walk:"rex/walk.gif",
+    jump:"rex/jump.gif", fall:"rex/fall.gif", angry:"rex/angry.gif",
+    confused:"rex/confused.gif", wave:"rex/wave.gif", crawl:"rex/crawl.gif",
+    hit_single:"rex/hit_single.gif", hit_multi:"rex/hit_multi.gif",
+    tap_head:"rex/tap_head.gif", tap_belly:"rex/tap_belly.gif", tap_paw:"rex/tap_paw.gif",
+    tap_tail:"rex/tap_tail.gif", tap_sunglasses:"rex/tap_sunglasses.gif",
+    tap_nose:"rex/tap_nose.gif", tap_ear:"rex/tap_ear.gif", tap_back:"rex/tap_back.gif",
+    tap_leg:"rex/tap_leg.gif", tap_body:"rex/tap_body.gif",
+    tap_random:"rex/tap_random.gif", tap_multi:"rex/tap_multi.gif"
+  };
+  /* one-shot lengths measured from the GIF files themselves (ms) */
+  var DUR = { idle_turn:960, celebrate:1600, wave:1320, jump:1440, fall:1800,
+    angry:1540, confused:1680, crawl:1320, hit_single:700, hit_multi:900,
+    tap_head:480, tap_belly:480, tap_paw:480, tap_tail:480, tap_sunglasses:480,
+    tap_nose:480, tap_ear:480, tap_back:480, tap_leg:480, tap_body:480,
+    tap_random:480, tap_multi:480 };
+  var LOOPS = { idle:1, walk:1, sleeping:1, talking:1, listening:1, thinking:1, working:1 };
+  var QUIPS = {
+    tap_belly: "Hey! That tickles 😄",
+    tap_sunglasses: "Cool stays on. 😎",
+    tap_nose: "Boop. Accepted."
+  };
+
+  /* ---------- geometry / rendering ---------- */
+  var x = 0, y = 0;              /* x: px from viewport left; y: px above the floor */
+  var flipped = false;           /* walk art faces LEFT; flipped (scaleX -1) = faces right */
+  var cur = "idle";              /* idle|walk|sleep|talking|oneshot|drag|drop|listening|thinking|hold */
+  var curGif = "idle";
+  var shotSeq = 0;
+
+  function petW(){ return box.offsetWidth || 156; }
+  function minX(){ return window.innerWidth < 640 ? 88 : 16; }  /* on phones, keep clear of the bottom-left back-to-top button */
+  function maxX(){ return Math.max(minX(), window.innerWidth - petW() - 16); }
+  function clampX(v){ return Math.min(Math.max(v, minX()), maxX()); }
+
+  function showGif(name, once){
+    if(!SRC[name]) return;
+    if(once){ img.src = SRC[name] + "#r" + (++shotSeq); curGif = name; return; }
+    /* the #fragment trick restarts a cached GIF without re-downloading it */
+    if(curGif !== name){ img.src = SRC[name]; curGif = name; }
+  }
+  function placeBubble(){
+    if(!bubble) return;
+    var bw = bubble.offsetWidth || 196;
+    var cx = x + petW() / 2;                       /* Rex's centre, viewport px */
+    var clamped = Math.min(Math.max(cx - bw / 2, 8), Math.max(8, window.innerWidth - bw - 8));
+    bubble.style.transform = "translateX(" + (clamped - cx) + "px)";
+    bubble.style.setProperty("--tail-x", Math.min(Math.max(cx - clamped, 16), Math.max(16, bw - 16)) + "px");
+  }
+  function render(){
+    box.style.transform = "translate3d(" + x + "px," + (-y) + "px,0)";
+    img.style.transform = flipped ? "scaleX(-1)" : "";
+    placeBubble();
+  }
+
+  /* ---------- state helpers ---------- */
+  var wanderTimer = null, shotTimer = null;
+  var walkTarget = 0, walkRAF = 0, walkLast = 0;
+  var talkResume = "idle";
+
+  function enterIdle(){
+    cur = "idle";
+    showGif("idle");
+    render();
+    scheduleWander();
+  }
+  function scheduleWander(){
+    clearTimeout(wanderTimer);
+    if(reduced) return;                            /* reduced motion: he stays parked */
+    wanderTimer = setTimeout(idleDecision, 7000 + Math.random() * 7000);
+  }
+  function idleDecision(){
+    if(cur !== "idle" || document.hidden){ scheduleWander(); return; }
+    var r = Math.random();
+    if(r < 0.50){ startWalk(); }
+    else if(r < 0.72){ playOnce(Math.random() < 0.5 ? "idle_turn" : "wave"); scheduleWander(); }
+    else scheduleWander();
+  }
+  function playOnce(name){
+    cur = "oneshot";
+    clearTimeout(shotTimer);
+    showGif(name, true);
+    shotTimer = setTimeout(function(){
+      if(cur === "oneshot") enterIdle();
+    }, DUR[name] || 900);
+  }
+  function startWalk(){
+    var target = minX() + Math.random() * Math.max(maxX() - minX(), 0);
+    if(Math.abs(target - x) < 40){ scheduleWander(); return; }
+    cur = "walk";
+    walkTarget = target;
+    flipped = target > x;                          /* art faces left: flip to walk right */
+    showGif("walk");
+    walkLast = performance.now();
+    cancelAnimationFrame(walkRAF);
+    walkRAF = requestAnimationFrame(walkStep);
+  }
+  function walkStep(now){
+    if(cur !== "walk") return;
+    var dt = Math.min((now - walkLast) / 1000, 0.05);
+    walkLast = now;
+    var dir = walkTarget > x ? 1 : -1;
+    x += dir * 55 * dt;                            /* ~55 px/s, matched to the gait loop */
+    if((dir > 0 && x >= walkTarget) || (dir < 0 && x <= walkTarget)){
+      x = walkTarget; render(); enterIdle(); return;
+    }
+    render();
+    walkRAF = requestAnimationFrame(walkStep);
+  }
+
+  /* ---------- sleep / wake ---------- */
+  var lastAct = Date.now();
+  function pokeActivity(){ lastAct = Date.now(); }
+  function enterSleep(){
+    cur = "sleep";
+    clearTimeout(wanderTimer);
+    cancelAnimationFrame(walkRAF);
+    showGif("sleeping");
+    if(bubble){ bubble.textContent = "Zzz…"; bubble.classList.add("dozing"); }
+    render();
+  }
+  function wake(){
+    if(cur !== "sleep") return;
+    if(bubble) bubble.classList.remove("dozing");
+    pokeActivity();
+    playOnce("jump");
+  }
+  ["pointerdown", "wheel", "touchmove", "keydown", "scroll"].forEach(function(ev){
+    window.addEventListener(ev, function(){
+      pokeActivity();
+      if(ev === "pointerdown" && cur === "sleep") wake();
+    }, { passive: true });
+  });
+  setInterval(function(){
+    if(document.hidden) return;
+    if((cur === "idle" || cur === "walk") && Date.now() - lastAct > 60000) enterSleep();
+  }, 1000);
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) pokeActivity(); });
+
+  /* ---------- talking (lip-sync hooks for the typewriter) ---------- */
+  function talkStart(){
+    if(cur === "sleep"){ if(bubble) bubble.classList.remove("dozing"); cur = "idle"; render(); }
+    if(reduced) return;
+    if(cur === "idle" || cur === "walk"){
+      talkResume = cur;
+      if(cur === "walk") cancelAnimationFrame(walkRAF);
+      cur = "talking";
+      showGif("talking");
+    }
+    /* during a one-shot / drag / hold he keeps doing what he's doing —
+       the bubble still types, he just doesn't lip-sync over it */
+  }
+  function talkEnd(){
+    if(cur !== "talking") return;
+    if(talkResume === "walk" && !reduced){
+      cur = "walk";
+      showGif("walk");
+      walkLast = performance.now();
+      walkRAF = requestAnimationFrame(walkStep);
+    } else {
+      enterIdle();
+    }
+  }
+
+  /* ---------- tap reactions: body-part hit zones + burst escalation ---------- */
+  function zoneFor(fx, fy){
+    /* fx/fy: tap point as fractions of Rex's rendered box.
+       u re-expresses x in pet space: 0 = front (face side), 1 = rear (tail).
+       The art faces left, so unflipped u = fx; flipped (facing right) u = 1 - fx. */
+    var u = flipped ? 1 - fx : fx;
+    if(fy < 0.20 && (u < 0.22 || u > 0.78)) return "tap_ear";              /* top corners */
+    if(fy >= 0.13 && fy <= 0.32 && u < 0.55) return "tap_sunglasses";      /* the shades band, face half */
+    if(fy > 0.30 && fy <= 0.47 && u >= 0.25 && u <= 0.65) return "tap_nose";
+    if(fy < 0.38 && u < 0.62) return "tap_head";
+    if(fy >= 0.72 && (u < 0.30 || u > 0.70)) return "tap_paw";             /* bottom outer thirds */
+    if(fy >= 0.42 && fy < 0.72 && u >= 0.30 && u <= 0.70) return "tap_belly";
+    if(fy < 0.75 && u > 0.70) return "tap_tail";                           /* rear third */
+    if(fy >= 0.30 && fy < 0.62) return "tap_back";
+    return "tap_body";
+  }
+  var tapTimes = [], cooldownUntil = 0;
+  function onRexTap(fx, fy){
+    var now = Date.now();
+    tapTimes = tapTimes.filter(function(t){ return now - t < 4000; });
+    tapTimes.push(now);
+    if(now < cooldownUntil) return;
+    if(cur !== "idle" && cur !== "walk" && cur !== "oneshot") return;      /* busy being dragged / talking / asked */
+    if(tapTimes.length >= 6){
+      /* spam-tapped: multi-hit, then genuinely annoyed */
+      tapTimes = [];
+      cooldownUntil = now + 5000;
+      cur = "oneshot";
+      clearTimeout(shotTimer);
+      cancelAnimationFrame(walkRAF);
+      showGif("hit_multi", true);
+      shotTimer = setTimeout(function(){
+        if(cur !== "oneshot") return;
+        showGif("angry", true);
+        say("Okay. Personal space. 😤");
+        shotTimer = setTimeout(function(){ if(cur === "oneshot") enterIdle(); }, DUR.angry);
+      }, DUR.hit_multi);
+      return;
+    }
+    var in2_5 = tapTimes.filter(function(t){ return now - t < 2500; }).length;
+    if(in2_5 >= 3){ playOnce("hit_single"); return; }
+    if(cur === "oneshot") return;                                          /* let the current reaction finish */
+    var zone = zoneFor(fx, fy);
+    playOnce(zone);
+    if(QUIPS[zone]) say(QUIPS[zone]);
+  }
+
+  /* ---------- drag & drop ---------- */
+  var dragInfo = null;
+  function startDrag(){
+    clearTimeout(shotTimer);
+    clearTimeout(wanderTimer);
+    cancelAnimationFrame(walkRAF);
+    cur = "drag";
+    showGif("jump", true);
+  }
+  box.addEventListener("pointerdown", function(ev){
+    if(cur === "sleep") return;                    /* the window listener wakes him instead */
+    pokeActivity();
+    var rect = box.getBoundingClientRect();
+    dragInfo = {
+      id: ev.pointerId, sx: ev.clientX, sy: ev.clientY, bx: x, by: y, moved: false,
+      fx: (ev.clientX - rect.left) / rect.width,
+      fy: (ev.clientY - rect.top) / rect.height,
+      tapTimer: null
+    };
+    try { box.setPointerCapture(ev.pointerId); } catch(e){}
+    /* a tap fires only if the press doesn't turn into a drag within 130ms */
+    dragInfo.tapTimer = setTimeout(function(){
+      if(dragInfo && !dragInfo.moved) onRexTap(dragInfo.fx, dragInfo.fy);
+    }, 130);
+  });
+  box.addEventListener("pointermove", function(ev){
+    if(!dragInfo || ev.pointerId !== dragInfo.id) return;
+    var dx = ev.clientX - dragInfo.sx, dy = ev.clientY - dragInfo.sy;
+    if(!dragInfo.moved && Math.sqrt(dx * dx + dy * dy) > 7){
+      dragInfo.moved = true;
+      clearTimeout(dragInfo.tapTimer);
+      if(!reduced) startDrag();
+    }
+    if(dragInfo.moved && !reduced){
+      x = clampX(dragInfo.bx + dx);
+      y = Math.min(Math.max(dragInfo.by - dy, 0), window.innerHeight * 0.45);
+      render();
+    }
+  });
+  function endDrag(ev){
+    if(!dragInfo || (ev && ev.pointerId !== undefined && ev.pointerId !== dragInfo.id)) return;
+    var wasDrag = dragInfo.moved;
+    clearTimeout(dragInfo.tapTimer);
+    dragInfo = null;
+    if(!wasDrag || reduced) return;
+    cur = "drop";
+    showGif("fall", true);
+    var y0 = y, t0 = performance.now();
+    (function dropStep(now){
+      if(cur !== "drop") return;
+      var p = Math.min((now - t0) / 250, 1);       /* ~250ms fall to the floor line */
+      y = y0 * (1 - p);
+      render();
+      if(p < 1){ requestAnimationFrame(dropStep); return; }
+      y = 0; render();
+      /* land, dust off (rest of the fall.gif), then back to idle */
+      setTimeout(function(){ if(cur === "drop") enterIdle(); }, Math.max(DUR.fall - 250, 400));
+    })(t0);
+  }
+  box.addEventListener("pointerup", endDrag);
+  box.addEventListener("pointercancel", endDrag);
+  box.addEventListener("lostpointercapture", function(){ endDrag(null); });
+  img.addEventListener("dragstart", function(ev){ ev.preventDefault(); });
+  box.addEventListener("keydown", function(ev){
+    if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); ask(); }
+  });
+
+  /* ---------- ask Rex (tap the bubble): listen -> think -> talk ----------
+     This is the seam the AI brain plugs into later: replace the canned
+     line with a brain call that ends in say(answer). */
+  var askLines = [
+    "Woof! That's me — Rex. I live on this page now. 🐕",
+    "I do tricks: tap my belly, drag me around, tap the sun up top. ☀️",
+    "Subash built me for the desktop first. This is my web edition. 🏖️",
+    "Scroll and I'll narrate. That is literally my job here. 🧭"
+  ];
+  var askIdx = 0, askBusy = false;
+  function ask(){
+    if(askBusy || cur === "drag" || cur === "drop") return;
+    if(cur === "sleep"){ wake(); return; }
+    askBusy = true;
+    clearTimeout(wanderTimer);
+    clearTimeout(shotTimer);
+    cancelAnimationFrame(walkRAF);
+    cur = "listening";
+    showGif("listening");
+    setTimeout(function(){
+      if(cur !== "listening"){ askBusy = false; return; }
+      cur = "thinking";
+      showGif("thinking");
+      setTimeout(function(){
+        askBusy = false;
+        if(cur !== "thinking") return;
+        cur = "idle";
+        say(askLines[askIdx++ % askLines.length]);  /* typing flips him to talking via the hooks */
+        if(cur === "idle") enterIdle();            /* reduced-motion path: no talking state */
+      }, 900);
+    }, 1200);
+  }
+  if(bubble){
+    bubble.addEventListener("pointerdown", function(ev){ ev.stopPropagation(); });
+    bubble.addEventListener("click", function(ev){ ev.stopPropagation(); ask(); });
+  }
+
+  /* ---------- celebrate (sun tap + first arrival at the end card) ---------- */
+  function celebrate(){
+    if(cur === "idle" || cur === "walk" || cur === "sleep"){
+      if(bubble) bubble.classList.remove("dozing");
+      playOnce("celebrate");
+    }
+  }
+  var contactEl = document.getElementById("contact");
+  if(contactEl && "IntersectionObserver" in window){
+    var cIO = new IntersectionObserver(function(en){
+      if(en[0].isIntersecting){ cIO.disconnect(); celebrate(); }
+    }, { threshold: 0.4 });
+    cIO.observe(contactEl);
+  }
+
+  /* ---------- public API (the brain plugs in here) ---------- */
+  function say(text){
+    if(window.__rexSay) window.__rexSay(text);
+    else if(bubble) bubble.textContent = text;
+  }
+  function setState(name){
+    if(name === "sleep") name = "sleeping";
+    if(!SRC[name]) return;
+    clearTimeout(shotTimer);
+    clearTimeout(wanderTimer);
+    cancelAnimationFrame(walkRAF);
+    if(bubble) bubble.classList.remove("dozing");
+    if(name === "idle"){ enterIdle(); return; }
+    if(name === "sleeping"){ enterSleep(); return; }
+    if(name === "walk"){ cur = "idle"; startWalk(); return; }
+    if(LOOPS[name]){ cur = "hold"; showGif(name); return; }
+    playOnce(name);
+  }
+  window.WebRex = {
+    say: say,
+    setState: setState,
+    celebrate: celebrate,
+    ask: ask,
+    _talkStart: talkStart,
+    _talkEnd: talkEnd
+  };
+
+  /* ---------- init ---------- */
+  x = maxX();                                      /* start bottom-right, like the old guide */
+  render();
+  scheduleWander();
+  window.addEventListener("resize", function(){ x = clampX(x); render(); });
+  window.addEventListener("load", function(){
+    ["idle", "walk", "sleeping", "talking", "tap_head"].forEach(function(n){
+      var i = new Image(); i.src = SRC[n];
+    });
+  });
 })();
 </script>
 </body>
