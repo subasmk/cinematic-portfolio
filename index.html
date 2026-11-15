@@ -85,6 +85,10 @@ h2.big .hl{color:var(--red)}
 .hdisc img{position:absolute;left:50%;bottom:7%;width:68%;height:auto;transform:translateX(-50%);pointer-events:none}
 .hchip{position:absolute;z-index:2;background:var(--cream-card,#fff7e6);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:7px 11px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;white-space:nowrap}
 .hstage .sun-hit{left:6%!important;top:6%!important;width:88%!important;height:88%!important;right:auto!important;z-index:3}
+/* round 8 — ONE Rex: he lives in the hero disc until you drag him out */
+#webrexBox.docked{position:absolute;left:50%;bottom:12%;width:60%;height:auto;aspect-ratio:1;z-index:4;transition:none}
+.hdisc .hdisc-note{position:absolute;left:50%;bottom:12%;transform:translateX(-50%) rotate(-2deg);font-family:'Space Mono',monospace;font-size:.66rem;font-weight:700;background:var(--cream-card,#fff7e6);border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:5px 9px;white-space:nowrap;display:none;z-index:1}
+.hdisc.empty .hdisc-note{display:block}
 .hspeech{max-width:420px;margin:22px auto 0}
 @media(min-width:900px){
   .hero-grid{grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr);gap:40px}
@@ -302,7 +306,7 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
 #webrexBox{position:absolute;left:0;bottom:var(--petb);width:var(--petw);height:var(--peth);pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;will-change:transform}
 #webrexBox:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 #webrex{width:100%;height:100%;object-fit:contain;object-position:bottom center;user-select:none;-webkit-user-drag:none;pointer-events:none}
-#rexBubble{position:absolute;left:50%;bottom:calc(100% + 10px);width:196px;pointer-events:auto;background:#f2eee5;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);opacity:1;padding:9px 12px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;line-height:1.45;cursor:pointer}
+#rexBubble{position:absolute;left:0;bottom:0;width:196px;pointer-events:auto;background:#f2eee5;border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);opacity:1;padding:9px 12px;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;line-height:1.45;cursor:pointer;touch-action:pan-y}
 #rexBubble::after{content:"";position:absolute;left:var(--tail-x,50%);bottom:-13px;transform:translateX(-50%);border:6px solid transparent;border-top:10px solid var(--ink)}
 #rexBubble.dozing{width:auto}
 #rexBubble{transition:opacity .45s ease}
@@ -396,7 +400,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     </div>
     <div class="hero-stage-wrap">
      <div class="hstage">
-      <div class="hdisc"><img src="assets/rex-idle.png" alt="Rex the Shiba, Subash's desktop assistant" width="300" height="300" loading="eager"></div>
+      <div class="hdisc"><img id="hdiscRex" src="assets/rex-idle.png" alt="Rex the Shiba, Subash's desktop assistant" width="300" height="300" loading="eager"><div class="hdisc-note">🐾 gone exploring…</div></div>
       <div class="hchip" style="left:0;top:8%;transform:rotate(-4deg)">● Open to internships</div>
       <div class="hchip" style="right:0;top:20%;transform:rotate(3deg)">Founder · Nientra</div>
       <div class="hchip" style="right:6%;bottom:6%;transform:rotate(-2deg)">Rex, my desktop assistant</div>
@@ -595,9 +599,9 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
 </button>
 
 <!-- WebRex — the living site assistant (the old guide, upgraded to a character) -->
-<div id="webrexStage">
+<div id="webrexStage" style="visibility:hidden">
+  <div id="rexBubble" aria-live="polite">Psst… drag me OUT of this disc. ☀️</div>
   <div id="webrexBox" role="button" tabindex="0" aria-label="Rex the Shiba — tap him, drag him, or press Enter to chat" title="Rex — tap or drag him">
-    <div id="rexBubble" aria-live="polite">Woof! I'm Rex. Scroll — I'll show you around.</div>
     <img id="webrex" src="assets/rex/idle.png" alt="Rex the Shiba, site assistant" width="170" height="170" draggable="false">
   </div>
 </div>
@@ -1480,7 +1484,14 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   };
   var DRAG_LINES = ["Oi! Careful, I am load-bearing!", "Put me down gently, I was watching the build.", "Whoa whoa whoa. Where are we going?!"];
   var LAND_LINES = ["10/10 landing. Zero dignity.", "Landed it. Mostly on my face.", "Ouch. Fine. I forgive you. Barely."];
-  var dragSayIdx = 0, landSayIdx = 0;
+  var UNDOCK_LINES = ["I'm out! Freedom smells like fresh deploys.", "Adventure time. The disc was getting cramped.", "Wheee! Okay, gravity still works."];
+  var dragSayIdx = 0, landSayIdx = 0, undockSayIdx = 0;
+  var docked = false, moveKind = "walk", dockVisible = false;
+  function isMoving(){ return cur === "walk" || cur === "crawl"; }
+  /* while docked, the disc can sit below the fold — his voice only exists
+     when the disc is actually on screen, otherwise the bubble floats over
+     unrelated hero text */
+  function bubbleAllowed(){ return !docked || dockVisible; }
 
   /* ---------- geometry / rendering ---------- */
   var x = 0, y = 0;              /* x: px from viewport left; y: px above the floor */
@@ -1503,29 +1514,93 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     /* the #fragment trick restarts a cached GIF without re-downloading it */
     if(curGif !== name){ img.src = SRC[name]; curGif = name; }
   }
+  /* round 8: the bubble lives in the fixed stage (NOT inside the pet box), so
+     a swipe starting on it still scrolls the page — no touch dead zone — and
+     it is positioned from Rex's real on-screen rect, clamped to innerWidth. */
   function placeBubble(){
     if(!bubble) return;
     var bw = bubble.offsetWidth || 196;
-    var cx = x + petW() / 2;                       /* Rex's centre, viewport px */
-    var vw = document.documentElement.clientWidth;
-    var clamped = Math.min(Math.max(cx - bw / 2, 8), Math.max(8, vw - bw - 8));
+    var bh = bubble.offsetHeight || 60;
+    var rect = box.getBoundingClientRect();        /* viewport coords, docked or free */
+    var cx = rect.left + rect.width / 2;
+    var vw = window.innerWidth;
+    var left = Math.min(Math.max(cx - bw / 2, 8), Math.max(8, vw - bw - 8));
+    var topEdge = rect.top - 10;                   /* bubble bottom sits 10px above Rex */
+    if(docked){
+      /* above the whole disc stage, so the opener never covers the chips */
+      var hs = document.querySelector(".hstage");
+      if(hs) topEdge = hs.getBoundingClientRect().top - 10;
+    }
     var cb = document.getElementById("rexChatBtn");
     if(cb && cb.offsetWidth){
-      var cr = cb.getBoundingClientRect(), bh = bubble.offsetHeight || 60;
-      var bTop = window.innerHeight - (bubble.parentNode.getBoundingClientRect ? 0 : 0);
-      var br = bubble.getBoundingClientRect();
-      if(br.width && br.bottom > cr.top - 6 && br.top < cr.bottom + 6 && br.right + (clamped - cx) - (br.left - 0) > 0){
-        /* bubble would run under the chat button: keep it left of it */
-        clamped = Math.min(clamped, Math.max(8, cr.left - 10 - bw));
+      var cr = cb.getBoundingClientRect();
+      if(topEdge > cr.top - 6 && topEdge - bh < cr.bottom + 6 && left + bw > cr.left - 6){
+        left = Math.max(8, Math.min(left, cr.left - 10 - bw));
       }
     }
-    bubble.style.transform = "translateX(" + (clamped - cx) + "px)";
-    bubble.style.setProperty("--tail-x", Math.min(Math.max(cx - clamped, 16), Math.max(16, bw - 16)) + "px");
+    bubble.style.left = left + "px";
+    bubble.style.bottom = (window.innerHeight - topEdge) + "px";
+    bubble.style.setProperty("--tail-x", Math.min(Math.max(cx - left, 16), Math.max(16, bw - 16)) + "px");
   }
+  /* walking/falling are compositor-driven CSS transitions — render() is not
+     called per frame, so the bubble would be left behind. Follow with rAF. */
+  var followRaf = null;
+  function followTick(){
+    placeBubble();
+    if(transitioning) followRaf = requestAnimationFrame(followTick);
+    else followRaf = null;
+  }
+  function startFollow(){ if(!followRaf) followRaf = requestAnimationFrame(followTick); }
   function render(){
+    if(docked){
+      box.style.transform = "translateX(-50%)";   /* anchored inside the hero disc */
+      img.style.transform = flipped ? "scaleX(-1)" : "";
+      placeBubble();
+      return;
+    }
     box.style.transform = "translate3d(" + x + "px," + (-y) + "px,0)";
     img.style.transform = flipped ? "scaleX(-1)" : "";
     placeBubble();
+  }
+
+  /* ---------- round 8: docked in the hero disc until dragged out ---------- */
+  function petBase(){
+    var v = "";
+    try { v = window.getComputedStyle(stage).getPropertyValue("--petb"); } catch(e){}
+    return parseFloat(v) || 8;
+  }
+  function dock(){
+    var hstage = document.querySelector(".hstage");
+    var hdisc  = document.querySelector(".hdisc");
+    if(!hstage || !hdisc) return false;
+    var staticImg = document.getElementById("hdiscRex");
+    if(staticImg) staticImg.style.display = "none";   /* the live Rex replaces the sticker */
+    box.classList.add("docked");
+    hstage.appendChild(box);
+    box.setAttribute("aria-label", "Rex the Shiba — drag him out of the disc, or tap him");
+    return true;
+  }
+  function undock(ev){
+    if(!docked) return;
+    docked = false;
+    box.classList.remove("docked");
+    box.style.transition = "none";
+    stage.appendChild(box);                           /* back to the fixed floor stage */
+    /* reparenting silently drops the active pointer capture — re-grab it or
+       the drag dies on the very first move (lostpointercapture -> drop) */
+    try { if(dragInfo) box.setPointerCapture(dragInfo.id); } catch(e){}
+    box.setAttribute("aria-label", "Rex the Shiba — tap him, drag him, or press Enter to chat");
+    var hdisc = document.querySelector(".hdisc");
+    if(hdisc) hdisc.classList.add("empty");
+    var pw = petW(), pb = petBase();
+    x = clampX(ev.clientX - pw / 2);
+    y = Math.min(Math.max(window.innerHeight - ev.clientY - pw / 2 - pb, 0), window.innerHeight * 0.60);
+    if(dragInfo){                                     /* rebase so the drag continues 1:1, no jump */
+      dragInfo.bx = x - (ev.clientX - dragInfo.sx);
+      dragInfo.by = y + (ev.clientY - dragInfo.sy);
+    }
+    say(UNDOCK_LINES[undockSayIdx++ % UNDOCK_LINES.length]);
+    render();
   }
 
   /* ---------- state helpers ---------- */
@@ -1559,8 +1634,20 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   function idleDecision(){
     if(cur !== "idle" || document.hidden){ scheduleWander(); return; }
     var r = Math.random();
-    if(r < 0.62){ startWalk(false); }
-    else if(r < 0.82){ playOnce(Math.random() < 0.5 ? "idle_turn" : "wave"); scheduleWander(); }
+    if(docked){
+      /* in the disc he can't wander — he idles, waves, gets bored */
+      if(r < 0.42){ playOnce(Math.random() < 0.5 ? "idle_turn" : "wave"); }
+      else if(r < 0.58){ playOnce("confused"); say("Hmm. Still stuck in here. The drag-me-out offer stands."); }
+      else if(r < 0.7){ playOnce("celebrate"); }
+      scheduleWander();
+      return;
+    }
+    if(r < 0.40){ startWalk(false); }
+    else if(r < 0.50){ startCrawl(); }
+    else if(r < 0.68){ playOnce(Math.random() < 0.5 ? "idle_turn" : "wave"); scheduleWander(); }
+    else if(r < 0.78){ playOnce("jump"); scheduleWander(); }
+    else if(r < 0.88){ playOnce("confused"); say("Hmm. Was that button always there?"); scheduleWander(); }
+    else if(r < 0.94){ playOnce("working"); say("Hold on… refactoring. Done. It was a semicolon."); scheduleWander(); }
     else scheduleWander();
   }
   function playOnce(name){
@@ -1591,30 +1678,41 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     }
     walkTo(target);
   }
-  function walkTo(target){
+  function startCrawl(){
+    if(reduced) return;
+    var lo = minX(), hi = maxX();
+    var target = lo + Math.random() * Math.max(hi - lo, 0);
+    if(Math.abs(target - x) < 60){ scheduleWander(); return; }
+    walkTo(target, "crawl");
+  }
+  function walkTo(target, kind){
+    kind = kind || "walk";
     clearTimeout(wanderTimer);
-    cur = "walk";
+    cur = kind;                                    /* "walk" or "crawl" */
+    moveKind = kind;
     walkTarget = target;
     flipped = target > x;                          /* art faces left: flip to walk right */
-    showGif("walk");
+    showGif(kind);
     var dist = Math.abs(target - x);
-    var dur = Math.max(dist / 70 * 1000, 140);     /* ~70 px/s */
+    var speed = kind === "crawl" ? 34 : 70;        /* crawl = low & slow */
+    var dur = Math.max(dist / speed * 1000, 140);
     var seq = ++walkSeq;
     transitioning = true;
     box.style.transition = "transform " + dur + "ms linear";
     x = target;
     render();
+    startFollow();
     clearTimeout(walkEndTimer);
     walkEndTimer = setTimeout(guard(function(){ if(seq === walkSeq) finishWalk(); }), dur + 180);
   }
   function finishWalk(){
-    if(cur !== "walk") return;
+    if(!isMoving()) return;
     transitioning = false;
     box.style.transition = "";
     enterIdle();
   }
   box.addEventListener("transitionend", function(ev){
-    if(ev.propertyName === "transform" && cur === "walk") finishWalk();
+    if(ev.propertyName === "transform" && isMoving()) finishWalk();
   });
   /* freeze him exactly where he visually is, mid-glide */
   function freezePos(){
@@ -1638,6 +1736,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
      retries until it happens */
   function tryFirstWalk(){
     if(firstWalkDone || reduced){ firstWalkDone = true; return; }
+    if(docked) return;                             /* no wandering inside the disc */
     if(Date.now() - bootAt < 2800) return;         /* the 3s boot timer retries */
     if(cur !== "idle") return;                     /* enterIdle retries */
     firstWalkDone = true;
@@ -1652,7 +1751,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     clearTimeout(wanderTimer);
     stopWalk();
     showGif("sleeping");
-    if(bubble){ bubble.textContent = "Zzz… deploy later."; bubble.classList.add("dozing"); bubble.style.opacity = "1"; bubble.style.pointerEvents = "auto"; }
+    if(bubble && bubbleAllowed()){ bubble.textContent = "Zzz… deploy later."; bubble.classList.add("dozing"); bubble.style.opacity = "1"; bubble.style.pointerEvents = "auto"; }
     render();
   }
   function wake(){
@@ -1669,7 +1768,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   });
   setInterval(guard(function(){
     if(document.hidden) return;
-    if((cur === "idle" || cur === "walk") && Date.now() - lastAct > 60000) enterSleep();
+    if((cur === "idle" || isMoving()) && Date.now() - lastAct > 60000) enterSleep();
   }), 1000);
   document.addEventListener("visibilitychange", function(){ if(!document.hidden) pokeActivity(); });
 
@@ -1677,9 +1776,9 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   function talkStart(){
     if(cur === "sleep"){ if(bubble) bubble.classList.remove("dozing"); cur = "idle"; render(); }
     if(reduced) return;
-    if(cur === "idle" || cur === "walk"){
+    if(cur === "idle" || isMoving()){
       talkResume = cur;
-      if(cur === "walk") stopWalk();              /* freeze mid-glide; walkTarget kept for the resume */
+      if(isMoving()) stopWalk();                  /* freeze mid-glide; walkTarget kept for the resume */
       cur = "talking";
       showGif("talking");
     }
@@ -1688,8 +1787,8 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   }
   function talkEnd(){
     if(cur !== "talking") return;
-    if(talkResume === "walk" && !reduced){
-      walkTo(walkTarget);                          /* glide the rest of the way */
+    if(isMoving() && talkResume !== "idle" && !reduced){
+      walkTo(walkTarget, moveKind);                /* glide the rest of the way */
     } else {
       enterIdle();
     }
@@ -1717,7 +1816,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     tapTimes = tapTimes.filter(function(t){ return now - t < 4000; });
     tapTimes.push(now);
     if(now < cooldownUntil) return;
-    if(cur !== "idle" && cur !== "walk" && cur !== "oneshot") return;      /* busy being dragged / talking / asked */
+    if(cur !== "idle" && !isMoving() && cur !== "oneshot") return;   /* busy being dragged / talking / asked */
     if(tapTimes.length >= 6){
       /* spam-tapped: multi-hit, then genuinely annoyed */
       tapTimes = [];
@@ -1776,15 +1875,25 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
       dragInfo.moved = true;
       clearTimeout(dragInfo.tapTimer);
       if(!reduced) startDrag();
+      else {                                       /* reduced motion: manual drag still works, minus the theatrics */
+        clearTimeout(shotTimer);
+        clearTimeout(wanderTimer);
+        stopWalk();
+        box.style.transition = "none";
+        cur = "drag";
+      }
+      if(docked) undock(ev);                       /* drag him OUT of the hero disc */
     }
-    if(dragInfo.moved && !reduced){
+    if(dragInfo.moved){
       var nx = clampX(dragInfo.bx + dx);
       var vx = nx - x;                              /* px since the last move: drives the swing */
       x = nx;
       y = Math.min(Math.max(dragInfo.by - dy, 0), window.innerHeight * 0.60);
       render();
-      img.classList.add("swing");
-      img.style.transform = (flipped ? "scaleX(-1) " : "") + "rotate(" + Math.max(-22, Math.min(22, vx * 1.6)) + "deg)";
+      if(!reduced){
+        img.classList.add("swing");
+        img.style.transform = (flipped ? "scaleX(-1) " : "") + "rotate(" + Math.max(-22, Math.min(22, vx * 1.6)) + "deg)";
+      }
     }
   });
   function endDrag(ev){
@@ -1795,7 +1904,17 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     /* a quick tap (released inside the 130ms window) used to be swallowed:
        the pending tap timer was cleared here and never fired. Fire it now. */
     if(!wasDrag && ev && ev.type === "pointerup"){ onRexTap(tapInfo.fx, tapInfo.fy); return; }
-    if(!wasDrag || reduced) return;
+    if(!wasDrag) return;
+    if(reduced){                                   /* reduced motion: no fall animation, just settle */
+      cur = "idle";
+      y = 0;
+      img.classList.remove("swing");
+      img.style.transform = flipped ? "scaleX(-1)" : "";
+      transitioning = false;
+      box.style.transition = "";
+      enterIdle();
+      return;
+    }
     cur = "drop";
     img.classList.remove("swing");
     img.style.transform = flipped ? "scaleX(-1)" : "";
@@ -1806,6 +1925,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     box.style.transition = "transform 260ms cubic-bezier(.55,.06,.85,1)";
     y = 0;
     render();
+    startFollow();
     setTimeout(guard(function(){
       transitioning = false;
       box.style.transition = "";
@@ -1882,6 +2002,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
 
   /* ---------- public API (the brain plugs in here) ---------- */
   function say(text){
+    if(!bubbleAllowed()) return;                   /* docked + disc offscreen = stay quiet */
     if(window.__rexSay) window.__rexSay(text);
     else if(bubble) bubble.textContent = text;
   }
@@ -1895,6 +2016,7 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
     if(name === "idle"){ enterIdle(); return; }
     if(name === "sleeping"){ enterSleep(); return; }
     if(name === "walk"){ cur = "idle"; startWalk(false); return; }
+    if(name === "crawl"){ cur = "idle"; startCrawl(); return; }
     if(LOOPS[name]){ cur = "hold"; showGif(name); return; }
     playOnce(name);
   }
@@ -1918,10 +2040,28 @@ section.hero{max-width:none;margin:0;padding-left:max(18px,calc((100% - 1120px)/
   };
 
   /* ---------- init ---------- */
-  x = maxX();                                      /* start bottom-right, like the old guide */
+  docked = dock();                                 /* round 8: he starts inside the hero disc */
+  if(!docked) x = maxX();                          /* fallback: bottom-right, like the old guide */
   render();
+  stage.style.visibility = "visible";
   scheduleWander();
-  setTimeout(function(){ if(cur === "idle" || cur === "walk") say("Back again? Good. Shipping beats scrolling."); }, 1400);
+  window.addEventListener("scroll", function(){ if(docked) placeBubble(); }, { passive: true });
+  /* track whether the disc is meaningfully on screen; re-invite when it
+     scrolls back into view (throttled), stay quiet while it is not */
+  var hstageEl = document.querySelector(".hstage"), lastInvite = 0;
+  if(hstageEl && "IntersectionObserver" in window){
+    var hIO = new IntersectionObserver(function(en){
+      dockVisible = en[0].isIntersecting && en[0].intersectionRatio > 0.55;
+      if(docked && !dockVisible && bubble){ bubble.style.opacity = "0"; bubble.style.pointerEvents = "none"; }
+      if(docked && dockVisible && Date.now() - lastInvite > 25000){
+        lastInvite = Date.now();
+        if(cur === "idle"){ playOnce("wave"); }
+        say("Psst… drag me OUT of this disc. ☀️");
+      }
+    }, { threshold: [0, 0.3, 0.55, 0.8] });
+    hIO.observe(hstageEl);
+  }
+  setTimeout(function(){ if(cur === "idle" || isMoving()) say(docked ? "Psst… drag me OUT of this disc. ☀️" : "Back again? Good. Shipping beats scrolling."); }, 1400);
   setTimeout(guard(tryFirstWalk), 3000);           /* round 6: guaranteed first wander */
   setTimeout(guard(tryFirstWalk), 5200);           /* second chance if he was mid-line */
   window.addEventListener("resize", function(){ x = clampX(x); render(); });
