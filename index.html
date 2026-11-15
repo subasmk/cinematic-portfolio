@@ -1880,9 +1880,8 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
   "use strict";
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------- the local brain ---------- */
-  window.WebRexBrain = {
-    answer: async function(q){
+  /* ---------- the local brain (fallback — logic kept intact) ---------- */
+  async function localAnswer(q){
       var s = " " + String(q || "").toLowerCase().replace(/\s+/g, " ") + " ";
       function has(){
         for(var i = 0; i < arguments.length; i++){ if(s.indexOf(arguments[i]) !== -1) return true; }
@@ -1918,6 +1917,62 @@ footer a:hover{background-size:100% 100%;color:var(--paper)}
       }
       await new Promise(function(res){ setTimeout(res, 300 + Math.random() * 350); });
       return out;
+  }
+
+  /* ---------- the remote brain: Gemini, via the Vercel proxy ---------- */
+  /* Endpoint resolution:
+       1. window.REX_BRAIN_URL, if the page defines one;
+       2. same-origin "/api/rex-chat" when this page is served from a
+          *.vercel.app host or from subashmk.xyz / nientra.xyz (hosts
+          where the proxy is deployed alongside the page);
+       3. REX_BRAIN_FALLBACK_URL below (e.g. for the GitHub Pages mirror).
+     >>> PARENT: if the real Vercel project URL differs from the guess,
+         correct it in this ONE constant — nothing else needs to change. */
+  var REX_BRAIN_FALLBACK_URL = "https://cinematic-portfolio-subasmks-projects.vercel.app/api/rex-chat";
+  function rexBrainUrl(){
+    if(window.REX_BRAIN_URL) return window.REX_BRAIN_URL;
+    var h = window.location.hostname || "";
+    if(h === "vercel.app" || h.slice(-11) === ".vercel.app" || h === "subashmk.xyz" || h === "nientra.xyz"){
+      return "/api/rex-chat";
+    }
+    return REX_BRAIN_FALLBACK_URL;
+  }
+  /* The last 8 exchanges (user + rex entries) ride along as context. */
+  var rexHistory = [];
+  function cleanBrainReply(t){
+    return String(t || "")
+      .replace(/\*\*/g, "")
+      .replace(/^\s*(#+|[-*•])\s+/gm, "")
+      .trim();
+  }
+  window.WebRexBrain = {
+    answer: async function(text){
+      var q = String(text || "");
+      var reply = null;
+      try {
+        var ctrl = ("AbortController" in window) ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function(){ ctrl.abort(); }, 7000) : null;
+        var res = await fetch(rexBrainUrl(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: q, history: rexHistory.slice(-16) }),
+          signal: ctrl ? ctrl.signal : undefined
+        });
+        if(timer) clearTimeout(timer);
+        if(res && res.ok){
+          var data = await res.json();
+          if(data && typeof data.reply === "string" && data.reply.trim()){
+            reply = cleanBrainReply(data.reply) || null;
+          }
+        }
+      } catch(e){ reply = null; }
+      /* Any failure at all — network, timeout, non-200, bad JSON, empty
+         reply — and the local keyword brain answers instead. */
+      if(reply === null) reply = await localAnswer(q);
+      rexHistory.push({ role: "user", text: q.slice(0, 500) });
+      rexHistory.push({ role: "rex", text: String(reply).slice(0, 500) });
+      if(rexHistory.length > 16) rexHistory = rexHistory.slice(-16);
+      return reply;
     }
   };
 
